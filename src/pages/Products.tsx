@@ -27,6 +27,30 @@ const Products: React.FC = () => {
     searchParams.get('category') ? parseInt(searchParams.get('category')!) : null
   );
 
+  // Sync internal state with URL parameters (for external changes like Header search)
+  useEffect(() => {
+    const urlSearch = searchParams.get('search') || '';
+    const urlCat = searchParams.get('category');
+    
+    // Only update if URL values are different from current state
+    // This avoids resetting state while user is typing
+    if (urlSearch !== searchTerm) {
+      setSearchTerm(urlSearch);
+    }
+    
+    if (urlCat) {
+      const catId = parseInt(urlCat);
+      if (catId !== selectedCategory) {
+        setSelectedCategory(catId);
+      }
+    } else if (selectedCategory !== null && !searchParams.has('category')) {
+      setSelectedCategory(null);
+    }
+    // We omit searchTerm and selectedCategory from deps to avoid sync loops
+    // while user is typing. We use eslint-disable-next-line to acknowledge this.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -99,14 +123,18 @@ const Products: React.FC = () => {
   return (
     <div className="bg-white min-h-screen">
       {/* Header */}
-      <div className="bg-gray-50 border-b border-gray-100 py-16">
+      <div className={`bg-gray-50 border-b border-gray-100 ${searchTerm ? 'py-8 lg:py-16' : 'py-16'}`}>
         <div className="container mx-auto px-4">
-          <div className="flex items-center space-x-3 text-brand-blue font-black text-sm tracking-widest uppercase mb-4">
+          <div className={`flex items-center space-x-3 text-brand-blue font-black text-sm tracking-widest uppercase mb-4 ${searchTerm ? 'hidden lg:flex' : ''}`}>
             <ShoppingBag className="w-5 h-5" />
             <span>Official Store</span>
           </div>
-          <h1 className="text-5xl font-black text-gray-900 tracking-tight">
-            Browse All <span className="text-gray-400">Products</span>
+          <h1 className={`${searchTerm ? 'text-3xl lg:text-5xl' : 'text-5xl'} font-black text-gray-900 tracking-tight`}>
+            {searchTerm ? (
+              <>Search <span className="text-gray-400 italic">Results</span></>
+            ) : (
+              <>Browse All <span className="text-gray-400">Products</span></>
+            )}
           </h1>
         </div>
       </div>
@@ -136,7 +164,7 @@ const Products: React.FC = () => {
 
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar: Categories & Subcategories */}
-          <aside className="w-full lg:w-72 flex-shrink-0">
+          <aside className={`w-full lg:w-72 flex-shrink-0 ${searchTerm ? 'hidden lg:block' : ''}`}>
             <div className="bg-white rounded-[32px] p-8 border border-gray-100 shadow-sm sticky top-32">
               <div className="flex items-center space-x-2 text-brand-blue font-black text-xs uppercase tracking-widest mb-8">
                 <Filter className="w-4 h-4" />
@@ -201,13 +229,17 @@ const Products: React.FC = () => {
           {/* Main Grid */}
           <div className="flex-grow">
             {/* Toolbar */}
-            <div className="flex flex-col lg:flex-row gap-6 justify-between items-center mb-12 bg-white p-6 rounded-[30px] shadow-sm border border-gray-100">
+            <div className={`flex flex-col lg:flex-row gap-6 justify-between items-center mb-12 bg-white p-6 rounded-[30px] shadow-sm border border-gray-100 ${searchTerm ? 'ring-2 ring-brand-blue/20' : ''}`}>
               <div className="relative w-full lg:w-96">
-                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                {loading ? (
+                  <Loader2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-blue animate-spin" />
+                ) : (
+                  <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${searchTerm ? 'text-brand-blue' : 'text-gray-400'}`} />
+                )}
                 <input 
                   type="text" 
                   placeholder="Search items..." 
-                  className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-brand-blue transition-all"
+                  className={`w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-brand-blue transition-all ${searchTerm ? 'bg-brand-blue/5' : ''}`}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />

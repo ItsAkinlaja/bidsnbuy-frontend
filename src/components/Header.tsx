@@ -29,7 +29,8 @@ import {
   Car,
   UtensilsCrossed,
   Heart,
-  Smartphone
+  Smartphone,
+  Loader2
 } from 'lucide-react';
 
 const categoryHierarchy = [
@@ -169,10 +170,22 @@ const Header: React.FC = () => {
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [dynamicCategories, setDynamicCategories] = useState<WPCategory[]>([]);
+  const [headerSearchTerm, setHeaderSearchTerm] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
+
+  // Sync header search term with URL
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const search = params.get('search') || '';
+    if (headerSearchTerm !== search) {
+      setHeaderSearchTerm(search);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.search]);
 
   // Helper to find WP category ID with fuzzy matching and search fallback
   const handleCategoryClick = (name: string, path?: string) => {
@@ -267,9 +280,15 @@ const Header: React.FC = () => {
 
   const handleSearchSubmit = (query: string) => {
     if (!query.trim()) return;
-    navigate(`/products?search=${encodeURIComponent(query.trim())}`);
-    setIsSearchOpen(false);
-    setIsMobileMenuOpen(false);
+    setIsSearching(true);
+    
+    // Brief delay to show the loading state for better UX feedback
+    setTimeout(() => {
+      navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+      setIsSearchOpen(false);
+      setIsMobileMenuOpen(false);
+      setIsSearching(false);
+    }, 600);
   };
 
   return (
@@ -302,26 +321,35 @@ const Header: React.FC = () => {
               />
             </Link>
 
-            {/* Search Bar (Desktop) */}
             <form 
               onSubmit={(e) => {
                 e.preventDefault();
-                const query = (e.currentTarget.elements.namedItem('search') as HTMLInputElement).value;
-                handleSearchSubmit(query);
+                handleSearchSubmit(headerSearchTerm);
               }}
               className="hidden lg:flex flex-grow max-w-2xl relative group"
             >
               <div className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand-blue transition-colors">
-                <Search className="w-5 h-5" />
+                {isSearching ? (
+                  <Loader2 className="w-5 h-5 animate-spin text-brand-blue" />
+                ) : (
+                  <Search className="w-5 h-5" />
+                )}
               </div>
               <input 
                 name="search"
                 type="text" 
-                placeholder="Search for auctions, products..." 
-                className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:bg-white focus:border-brand-blue focus:outline-none transition-all"
+                value={headerSearchTerm}
+                onChange={(e) => setHeaderSearchTerm(e.target.value)}
+                disabled={isSearching}
+                placeholder={isSearching ? "Searching..." : "Search for auctions, products..."}
+                className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:bg-white focus:border-brand-blue focus:outline-none transition-all disabled:opacity-70"
               />
-              <button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-dark text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-brand-blue transition-colors">
-                Search
+              <button 
+                type="submit" 
+                disabled={isSearching}
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand-dark text-white px-6 py-2 rounded-xl text-sm font-bold hover:bg-brand-blue transition-colors flex items-center min-w-[100px] justify-center disabled:bg-gray-400"
+              >
+                {isSearching ? <Loader2 className="w-4 h-4 animate-spin" /> : "Search"}
               </button>
             </form>
 
@@ -391,20 +419,43 @@ const Header: React.FC = () => {
 
         {/* --- MOBILE SEARCH BAR (Toggleable) --- */}
         {isSearchOpen && (
-          <div className="lg:hidden p-4 bg-white border-b border-gray-100 shadow-lg animate-slide-in-top">
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-              <input 
-                type="text" 
-                autoFocus
-                placeholder="Search BidsnBuy..." 
-                className="w-full bg-gray-50 border-2 border-brand-blue rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none"
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearchSubmit(e.currentTarget.value);
-                  }
-                }}
-              />
+          <div className="lg:hidden bg-white border-b border-gray-100 shadow-xl animate-slide-in-top overflow-y-auto max-h-[80vh]">
+            <div className="p-4">
+              <div className="relative mb-6">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
+                <input 
+                  type="text" 
+                  autoFocus
+                  placeholder="Search BidsnBuy..." 
+                  value={headerSearchTerm}
+                  onChange={(e) => setHeaderSearchTerm(e.target.value)}
+                  className="w-full bg-gray-50 border-2 border-brand-blue rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleSearchSubmit(headerSearchTerm);
+                    }
+                  }}
+                />
+              </div>
+
+              {/* Quick Categories in Search */}
+              <div className="space-y-4 pb-4">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest px-2">Quick Categories</p>
+                <div className="grid grid-cols-2 gap-2">
+                  {categoryHierarchy.slice(0, 6).map((cat) => (
+                    <button
+                      key={cat.name}
+                      onClick={() => handleCategoryClick(cat.name)}
+                      className="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl hover:bg-brand-blue/5 transition-colors text-left"
+                    >
+                      <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shadow-sm text-gray-400">
+                        <cat.icon className="w-4 h-4" />
+                      </div>
+                      <span className="text-xs font-bold text-gray-700 truncate">{decodeHtml(cat.name.split(' & ')[0])}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           </div>
         )}
@@ -616,26 +667,8 @@ const Header: React.FC = () => {
                  </button>
               </div>
 
-              {/* Navigation Links */}
-              <div className="px-4 py-4">
-                <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Main Exploration</p>
-                <div className="space-y-1">
-                  {menuItems.slice(0, 5).map((item, idx) => (
-                    <Link 
-                      key={idx} 
-                      to={item.path}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="flex items-center justify-between px-4 py-3.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-all"
-                    >
-                      <span>{item.name}</span>
-                      <ChevronRight className="w-4 h-4 text-gray-300" />
-                    </Link>
-                  ))}
-                </div>
-              </div>
-
-              {/* Categories Section */}
-              <div className="px-4 pb-12">
+              {/* Categories Section (Moved up) */}
+              <div className="px-4 pb-4">
                 <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Categories</p>
                 <div className="flex flex-col space-y-1">
                   {categoryHierarchy.map((item) => (
@@ -648,7 +681,7 @@ const Header: React.FC = () => {
                           <div className={`p-2 rounded-lg transition-colors ${hoveredCategory === item.name ? 'bg-brand-blue text-white' : 'bg-white border border-gray-100 text-gray-400 group-hover:text-brand-blue'}`}>
                             <item.icon className="w-5 h-5" />
                           </div>
-                          <span className={`text-sm font-bold ${hoveredCategory === item.name ? 'text-brand-blue' : 'text-gray-600'}`}>{item.name}</span>
+                          <span className={`text-sm font-bold ${hoveredCategory === item.name ? 'text-brand-blue' : 'text-gray-600'}`}>{decodeHtml(item.name)}</span>
                         </div>
                         <ChevronRight className={`w-4 h-4 text-gray-300 transition-transform ${hoveredCategory === item.name ? 'rotate-90' : ''}`} />
                       </button>
@@ -664,12 +697,30 @@ const Header: React.FC = () => {
                               }}
                               className="block w-full text-left py-2.5 text-xs font-bold text-gray-400 hover:text-brand-orange transition-colors"
                             >
-                              {sub.name}
+                              {decodeHtml(sub.name)}
                             </button>
                           ))}
                         </div>
                       )}
                     </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="px-4 py-4">
+                <p className="px-4 text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Main Exploration</p>
+                <div className="space-y-1">
+                  {menuItems.slice(0, 5).map((item, idx) => (
+                    <Link 
+                      key={idx} 
+                      to={item.path}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-between px-4 py-3.5 text-sm font-bold text-gray-700 hover:bg-gray-50 rounded-xl transition-all"
+                    >
+                      <span>{decodeHtml(item.name)}</span>
+                      <ChevronRight className="w-4 h-4 text-gray-300" />
+                    </Link>
                   ))}
                 </div>
               </div>
