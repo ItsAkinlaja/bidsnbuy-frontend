@@ -24,15 +24,39 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
   });
 
   useEffect(() => {
-    if (isAuction && product.auction_end_time) {
-      const timer = setInterval(() => {
-        const end = new Date(product.auction_end_time!).getTime();
+    if ((isAuction || product.is_auction)) {
+      const updateTimer = () => {
+        if (!product.auction_end_time) {
+          setTimeLeft({
+            hours: '00',
+            mins: '00',
+            secs: '00',
+            isEnded: true,
+            isEndingSoon: false
+          });
+          return true;
+        }
+
+        let end;
+        // Check if auction_end_time is a timestamp (numeric string) or a date string
+        if (/^\d+$/.test(product.auction_end_time!)) {
+          end = parseInt(product.auction_end_time!) * 1000; // Convert seconds to ms
+        } else {
+          end = new Date(product.auction_end_time!).getTime();
+        }
+        
         const now = new Date().getTime();
         const diff = end - now;
 
-        if (diff <= 0) {
-          setTimeLeft(prev => ({ ...prev, isEnded: true }));
-          clearInterval(timer);
+        if (isNaN(end) || diff <= 0) {
+          setTimeLeft({
+            hours: '00',
+            mins: '00',
+            secs: '00',
+            isEnded: true,
+            isEndingSoon: false
+          });
+          return true; // Stop timer
         } else {
           const hours = Math.floor(diff / (1000 * 60 * 60));
           const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
@@ -45,11 +69,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
             isEnded: false,
             isEndingSoon: diff < (1000 * 60 * 30) // Less than 30 mins
           });
+          return false; // Continue timer
         }
+      };
+
+      // Wrap the initial state setting in requestAnimationFrame to avoid synchronous setState warning
+      const frameId = requestAnimationFrame(() => {
+        updateTimer();
+      });
+
+      const timer = setInterval(() => {
+        const isEnded = updateTimer();
+        if (isEnded) clearInterval(timer);
       }, 1000);
-      return () => clearInterval(timer);
+
+      return () => {
+        cancelAnimationFrame(frameId);
+        clearInterval(timer);
+      };
     }
-  }, [isAuction, product.auction_end_time]);
+  }, [isAuction, product.is_auction, product.auction_end_time]);
 
   const imageUrl = product.images?.[0]?.src || 'https://via.placeholder.com/300x300?text=No+Image';
 

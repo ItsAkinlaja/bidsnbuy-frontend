@@ -184,7 +184,11 @@ export const wpService = {
         is_auction: true,
         current_bid: getMeta('_yith_auction_current_bid') || getMeta('_auction_current_bid') || product.price,
         bid_count: parseInt(getMeta('_yith_auction_bid_count') || getMeta('_auction_bid_count') || '0'),
-        auction_end_time: getMeta('_yith_auction_to') || getMeta('_auction_dates_to'),
+        // YITH stores end dates in multiple possible keys depending on version/settings
+        auction_end_time: getMeta('_yith_auction_to') || 
+                         getMeta('_yith_auction_for') || 
+                         getMeta('_auction_dates_to') || 
+                         getMeta('_yith_auction_end_date'),
         auction_start_time: getMeta('_yith_auction_from') || getMeta('_auction_dates_from'),
         auction_start_price: getMeta('_yith_auction_start_price') || getMeta('_auction_start_price'),
         auction_bid_increment: getMeta('_yith_auction_bid_increment') || getMeta('_auction_bid_increment'),

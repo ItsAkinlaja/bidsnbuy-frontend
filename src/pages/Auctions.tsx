@@ -4,6 +4,7 @@ import type { WPProduct } from '../types/wordpress';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
 import LoadingBar from '../components/LoadingBar';
+import SEO from '../components/SEO';
 import { 
   Hammer, 
   Search, 
@@ -82,6 +83,10 @@ const Auctions: React.FC = () => {
 
   return (
     <div className="bg-gray-50 min-h-screen pb-24 font-sans">
+      <SEO 
+        title="Live Auctions Floor" 
+        description="Enter the BidsnBuy auction floor. Bid on premium gadgets, luxury items, and exclusive warehouse deals in real-time."
+      />
       <LoadingBar isLoading={loading} />
       {/* Professional Auction Floor Header */}
       <div className="bg-white border-b border-gray-100 pt-16 pb-20 relative overflow-hidden">

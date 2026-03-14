@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Host
+Host: https://bidsnbuy.ng
+
+# Sitemaps
+Sitemap: https://bidsnbuy.ng/sitemap.xml

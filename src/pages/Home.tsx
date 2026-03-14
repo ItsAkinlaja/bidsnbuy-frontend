@@ -7,6 +7,7 @@ import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
 import LoadingBar from '../components/LoadingBar';
 import AuthModal from '../components/AuthModal';
+import SEO from '../components/SEO';
 import { 
   Loader2, 
   Hammer, 
@@ -316,6 +317,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="bg-white selection:bg-brand-blue/10 selection:text-brand-blue">
+      <SEO />
       <LoadingBar isLoading={globalLoading} />
       {/* --- INITIAL TOP-LEVEL PRELOADER (Ultra-Fast) --- */}
       {showInitialLoader && (

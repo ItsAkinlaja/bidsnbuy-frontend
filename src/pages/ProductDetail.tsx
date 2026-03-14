@@ -5,6 +5,7 @@ import { authService } from '../services/auth';
 import { useBreadcrumb } from '../context/BreadcrumbContext';
 import { useNotification } from '../context/NotificationContext';
 import AuthModal from '../components/AuthModal';
+import SEO from '../components/SEO';
 import type { WPProduct } from '../types/wordpress';
 import { 
   Loader2, 
@@ -167,6 +168,10 @@ const ProductDetail: React.FC = () => {
 
   return (
     <div className="bg-white min-h-screen pb-20">
+      <SEO 
+        title={product.name} 
+        description={product.description?.replace(/<[^>]*>/g, '').slice(0, 160) || `Bid on ${product.name} at BidsnBuy. Nigeria's premier auction platform.`} 
+      />
       <div className="container mx-auto px-4 py-12">
         {/* Breadcrumb */}
         <nav className="hidden lg:flex items-center space-x-2 text-sm font-bold text-gray-400 uppercase tracking-widest mb-12">
