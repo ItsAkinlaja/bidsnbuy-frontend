@@ -10,14 +10,123 @@ const api = axios.create({
   baseURL: WP_BASE_URL,
 });
 
-// Create a specialized instance for WooCommerce V3 with Basic Auth (Preferred for HTTPS)
 const wcApi = axios.create({
   baseURL: WP_BASE_URL,
-  auth: {
-    username: CONSUMER_KEY!,
-    password: CONSUMER_SECRET!,
+  params: {
+    consumer_key: CONSUMER_KEY,
+    consumer_secret: CONSUMER_SECRET,
   },
 });
+
+// Helper to map YITH Auction meta data to standard fields
+const mapAuctionData = (product: WPProduct): WPProduct => {
+  if (!product) return product;
+  
+  const meta = product.meta_data || [];
+  const getMeta = (key: string) => {
+    const value = meta.find((m) => m.key === key)?.value;
+    if (value === undefined || value === null) return undefined;
+    if (typeof value === 'object') {
+      try {
+        return JSON.stringify(value);
+      } catch {
+        return undefined;
+      }
+    }
+    return String(value);
+  };
+
+  const isYithAuctionFlag = getMeta('_yith_is_an_auction_product') === 'yes' || getMeta('_yith_is_an_auction_product') === '1';
+  
+  // Check if it's actually an auction
+  const isAuctionType = product.type === 'auction';
+  const hasAuctionCategory = product.categories?.some(c => 
+    c.slug === 'auctions' || 
+    c.slug === 'auction' || 
+    c.name.toLowerCase().includes('auction') ||
+    c.name.toLowerCase().includes('bid')
+  );
+  const hasAuctionMeta = meta.some(m => 
+    m.key === '_yith_auction' || 
+    m.key === '_yith_auction_for' ||
+    m.key.startsWith('_yith_auction_') || 
+    m.key.startsWith('_auction_')
+  );
+
+  if (!isAuctionType && !hasAuctionCategory && !hasAuctionMeta && !isYithAuctionFlag) {
+    return product;
+  }
+
+  // Extract bidder history from meta if available (YITH specific)
+  const bidderHistoryRaw = getMeta('_yith_auction_bid_history');
+  let bidderHistory = [];
+  try {
+    if (bidderHistoryRaw) {
+      bidderHistory = JSON.parse(bidderHistoryRaw);
+    }
+  } catch (e) {
+    console.warn('Failed to parse bidder history:', e);
+  }
+
+  // Map end time with every possible YITH and WooCommerce Auction key (underscored and non-underscored)
+  const auction_end_time = getMeta('_yith_auction_to') || 
+                          getMeta('yith_auction_to') ||
+                          getMeta('_yith_auction_for') || 
+                          getMeta('yith_auction_for') ||
+                          getMeta('_auction_dates_to') || 
+                          getMeta('auction_dates_to') ||
+                          getMeta('_yith_auction_end_date') ||
+                          getMeta('yith_auction_end_date') ||
+                          getMeta('_auction_end_date') ||
+                          getMeta('auction_end_date') ||
+                          getMeta('_yith_auction_date_to') ||
+                          getMeta('yith_auction_date_to') ||
+                          getMeta('_yith_auction_stop') ||
+                          getMeta('yith_auction_stop') ||
+                          product.yith_auction_to ||
+                          product.auction_end_time;
+
+  // Map start time with every possible YITH and WooCommerce Auction key
+  const auction_start_time = getMeta('_yith_auction_from') || 
+                            getMeta('yith_auction_from') ||
+                            getMeta('_auction_dates_from') ||
+                            getMeta('auction_dates_from') ||
+                            getMeta('_yith_auction_start_date') ||
+                            getMeta('yith_auction_start_date') ||
+                            getMeta('_auction_start_date') ||
+                            getMeta('auction_start_date') ||
+                            getMeta('_yith_auction_date_from') ||
+                            getMeta('yith_auction_date_from') ||
+                            getMeta('_yith_auction_start') ||
+                            getMeta('yith_auction_start') ||
+                            product.yith_auction_from ||
+                            product.auction_start_time;
+
+  // Extra check: Search meta for ANY key that might contain date info if we still don't have it
+  let fallback_end = auction_end_time;
+  if (!fallback_end) {
+    // Try to find any meta key that contains 'auction' and some date-related keyword
+    const dateMeta = meta.find(m => {
+      const k = m.key.toLowerCase();
+      return k.includes('auction') && (k.includes('to') || k.includes('end') || k.includes('stop') || k.includes('date'));
+    });
+    if (dateMeta) fallback_end = String(dateMeta.value);
+  }
+
+  return {
+    ...product,
+    is_auction: true,
+    current_bid: getMeta('_yith_auction_current_bid') || getMeta('current_bid') || getMeta('_auction_current_bid') || product.price,
+    bid_count: parseInt(getMeta('_yith_auction_bid_count') || getMeta('bid_count') || getMeta('_auction_bid_count') || '0'),
+    auction_end_time: fallback_end,
+    auction_start_time,
+    auction_start_price: getMeta('_yith_auction_start_price') || getMeta('start_price') || getMeta('_auction_start_price'),
+    auction_bid_increment: getMeta('_yith_auction_bid_increment') || getMeta('bid_increment') || getMeta('_auction_bid_increment'),
+    auction_min_bid: getMeta('_yith_auction_min_bid') || getMeta('min_bid') || getMeta('_auction_min_bid'),
+    auction_status: (getMeta('_yith_auction_closed') === 'yes' || getMeta('_auction_closed') === 'yes' || product.auction_status === 'finished' ? 'finished' : 'active') as 'active' | 'finished' | 'not-started',
+    bidder_history: bidderHistory
+  } as WPProduct;
+};
 
 // Add Interceptor for JWT token to the standard api
 api.interceptors.request.use((config) => {
@@ -69,12 +178,12 @@ export const wpService = {
     try {
       // Try WooCommerce V3 first with our API keys for full data access (like auctions)
       const response = await wcApi.get<WPProduct[]>('/wc/v3/products', { params });
-      return response.data;
+      return response.data.map(mapAuctionData);
     } catch (error) {
       console.warn('WooCommerce V3 failed, trying Store API fallback:', error);
       try {
         const response = await api.get<WPProduct[]>('/wc/store/v1/products', { params });
-        return response.data;
+        return response.data.map(mapAuctionData);
       } catch (e) {
         console.error('Failed to fetch products:', e);
         return [];
@@ -85,12 +194,12 @@ export const wpService = {
   async getProductBySlug(slug: string) {
     try {
       const response = await wcApi.get<WPProduct[]>(`/wc/v3/products?slug=${slug}`);
-      return response.data[0];
+      return mapAuctionData(response.data[0]);
     } catch (error) {
       console.warn('V3 product slug fetch failed, trying Store API:', error);
       try {
         const response = await api.get<WPProduct[]>(`/wc/store/v1/products?slug=${slug}`);
-        return response.data[0];
+        return mapAuctionData(response.data[0]);
       } catch (e) {
         console.error('Failed to fetch product by slug:', e);
         return null;
@@ -105,14 +214,14 @@ export const wpService = {
       const response = await wcApi.get<WPProduct[]>('/wc/v3/products', {
         params: { include: ids.join(',') }
       });
-      return response.data;
+      return response.data.map(mapAuctionData);
     } catch (error) {
       console.warn('V3 IDs fetch failed, trying Store API:', error);
       try {
         const response = await api.get<WPProduct[]>('/wc/store/v1/products', {
           params: { include: ids.join(',') }
         });
-        return response.data;
+        return response.data.map(mapAuctionData);
       } catch (e) {
         console.error('Failed to fetch products by IDs:', e);
         return [];
@@ -135,68 +244,14 @@ export const wpService = {
       order: 'desc'
     });
     
-    // Filter and map to include auction-specific fields
-    const auctionProducts = allProducts.filter(product => {
-      const isAuctionType = product.type === 'auction';
-      const hasAuctionCategory = product.categories?.some(c => 
-        c.slug === 'auctions' || 
-        c.slug === 'auction' || 
-        c.name.toLowerCase().includes('auction') ||
-        c.name.toLowerCase().includes('bid')
-      );
-      // YITH uses meta_data for auction specifics
-      const hasAuctionMeta = product.meta_data?.some(m => 
-        m.key === '_yith_auction' || 
-        m.key === '_yith_auction_for' ||
-        m.key.startsWith('_yith_auction_') || 
-        m.key.startsWith('_auction_')
-      );
-
-      return isAuctionType || hasAuctionCategory || hasAuctionMeta;
-    });
+    // Filter to only auctions (mapAuctionData adds is_auction: true)
+    const auctionProducts = allProducts.filter(p => p.is_auction);
 
     if (auctionProducts.length === 0) {
       console.warn('No auction products found after broad filter. Check meta_data or categories.');
     }
 
-    // Map and then limit to finalLimit
-    return auctionProducts.slice(0, finalLimit).map(product => {
-      const meta = product.meta_data || [];
-      
-      const getMeta = (key: string) => {
-        const value = meta.find((m) => m.key === key)?.value;
-        return value !== undefined ? String(value) : undefined;
-      };
-
-      // Extract bidder history from meta if available (YITH specific)
-      const bidderHistoryRaw = getMeta('_yith_auction_bid_history');
-      let bidderHistory = [];
-      try {
-        if (bidderHistoryRaw) {
-          bidderHistory = JSON.parse(bidderHistoryRaw);
-        }
-      } catch (e) {
-        console.warn('Failed to parse bidder history:', e);
-      }
-
-      return {
-        ...product,
-        is_auction: true,
-        current_bid: getMeta('_yith_auction_current_bid') || getMeta('_auction_current_bid') || product.price,
-        bid_count: parseInt(getMeta('_yith_auction_bid_count') || getMeta('_auction_bid_count') || '0'),
-        // YITH stores end dates in multiple possible keys depending on version/settings
-        auction_end_time: getMeta('_yith_auction_to') || 
-                         getMeta('_yith_auction_for') || 
-                         getMeta('_auction_dates_to') || 
-                         getMeta('_yith_auction_end_date'),
-        auction_start_time: getMeta('_yith_auction_from') || getMeta('_auction_dates_from'),
-        auction_start_price: getMeta('_yith_auction_start_price') || getMeta('_auction_start_price'),
-        auction_bid_increment: getMeta('_yith_auction_bid_increment') || getMeta('_auction_bid_increment'),
-        auction_min_bid: getMeta('_yith_auction_min_bid') || getMeta('_auction_min_bid'),
-        auction_status: (getMeta('_yith_auction_closed') === 'yes' || getMeta('_auction_closed') === 'yes' ? 'finished' : 'active') as 'active' | 'finished' | 'not-started',
-        bidder_history: bidderHistory
-      } as WPProduct;
-    });
+    return auctionProducts.slice(0, finalLimit);
   },
 
   // Fetch Categories

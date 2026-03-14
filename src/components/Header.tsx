@@ -245,7 +245,21 @@ const Header: React.FC = () => {
           <div className="container mx-auto px-4 py-3 lg:py-5 flex items-center justify-between gap-4 lg:gap-8">
             
             {/* Logo */}
-            <Link to="/" className="flex items-center group flex-shrink-0">
+            <Link 
+              to="/" 
+              onClick={(e) => {
+                if (location.pathname === '/') {
+                  e.preventDefault();
+                  const mainContent = document.getElementById('main-content');
+                  if (mainContent) {
+                    mainContent.scrollIntoView({ behavior: 'smooth' });
+                  } else {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  }
+                }
+              }}
+              className="flex items-center group flex-shrink-0"
+            >
               <img 
                 src="https://bidsnbuy.ng/wp-content/uploads/2024/01/cropped-Bidnbuylogo.jpg" 
                 alt="BidsnBuy Logo" 

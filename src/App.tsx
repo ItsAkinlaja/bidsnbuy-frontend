@@ -31,7 +31,7 @@ const App: React.FC = () => {
             <Header />
 
             {/* Main Content Area */}
-            <main>
+            <main id="main-content">
               <Breadcrumbs />
               <Routes>
                 <Route path="/" element={<Home />} />
@@ -58,7 +58,16 @@ const App: React.FC = () => {
               <div className="container mx-auto px-4 max-w-[1440px]">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                   <div className="space-y-4">
-                    <Link to="/" className="flex items-center">
+                    <Link 
+                      to="/" 
+                      onClick={(e) => {
+                        if (window.location.pathname === '/') {
+                          e.preventDefault();
+                          document.getElementById('main-content')?.scrollIntoView({ behavior: 'smooth' });
+                        }
+                      }}
+                      className="flex items-center"
+                    >
                       <img 
                         src="https://bidsnbuy.ng/wp-content/uploads/2025/11/Bidnbuylogo-removebg-preview.png" 
                         alt="BidsnBuy Logo" 

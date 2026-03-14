@@ -58,12 +58,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
           });
           return true; // Stop timer
         } else {
-          const hours = Math.floor(diff / (1000 * 60 * 60));
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const secs = Math.floor((diff % (1000 * 60)) / 1000);
           
           setTimeLeft({
-            hours: hours.toString().padStart(2, '0'),
+            hours: (days * 24 + hours).toString().padStart(2, '0'),
             mins: mins.toString().padStart(2, '0'),
             secs: secs.toString().padStart(2, '0'),
             isEnded: false,

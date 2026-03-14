@@ -6,6 +6,7 @@ import { useBreadcrumb } from '../context/BreadcrumbContext';
 import { useNotification } from '../context/NotificationContext';
 import AuthModal from '../components/AuthModal';
 import SEO from '../components/SEO';
+import ProductCard from '../components/ProductCard';
 import type { WPProduct } from '../types/wordpress';
 import { 
   Loader2, 
@@ -23,7 +24,9 @@ import {
   Users,
   Trophy,
   History,
-  Info
+  Info,
+  Zap,
+  Sparkles
 } from 'lucide-react';
 
 const PRODUCT_TABS = [
@@ -46,8 +49,35 @@ const ProductDetail: React.FC = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'description' | 'specifications' | 'shipping'>('description');
+  const [relatedProducts, setRelatedProducts] = useState<WPProduct[]>([]);
 
   useEffect(() => {
+    const fetchRelated = async (categoryId: number, currentId: number) => {
+      try {
+        // Try fetching related products by category
+        let related: WPProduct[] = [];
+        if (categoryId > 0) {
+          related = await wpService.getProducts({ 
+            category: categoryId, 
+            per_page: 4,
+            exclude: currentId.toString()
+          });
+        }
+
+        // Fallback: If no related products found in the same category or no category, fetch newest products
+        if (!related || related.length === 0) {
+          related = await wpService.getProducts({ 
+            per_page: 4,
+            exclude: currentId.toString()
+          });
+        }
+        
+        setRelatedProducts(related);
+      } catch (err) {
+        console.error('Error fetching related products:', err);
+      }
+    };
+
     const fetchProduct = async () => {
       if (!slug) return;
       try {
@@ -63,6 +93,14 @@ const ProductDetail: React.FC = () => {
           const recent = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
           const updatedRecent = [data.id, ...recent.filter((id: number) => id !== data.id)].slice(0, 10);
           localStorage.setItem('recentlyViewed', JSON.stringify(updatedRecent));
+
+          // Fetch related products
+          if (data.categories && data.categories.length > 0) {
+            fetchRelated(data.categories[0].id, data.id);
+          } else {
+            // If no category, still fetch some products
+            fetchRelated(0, data.id);
+          }
         } else {
           setError('Product not found.');
         }
@@ -78,24 +116,72 @@ const ProductDetail: React.FC = () => {
   }, [slug, setCustomTitle]);
 
   useEffect(() => {
-    if (product?.is_auction && product.auction_end_time) {
-      const timer = setInterval(() => {
-        const end = new Date(product.auction_end_time!).getTime();
+    if (product?.is_auction) {
+      const updateTimer = () => {
+        if (!product.auction_end_time) {
+          setTimeLeft('Not set');
+          return true;
+        }
+
+        let start, end;
+        // Parse end time
+        if (/^\d+$/.test(product.auction_end_time!)) {
+          end = parseInt(product.auction_end_time!) * 1000;
+        } else {
+          end = new Date(product.auction_end_time!).getTime();
+        }
+
+        // Parse start time if exists
+        if (product.auction_start_time) {
+          if (/^\d+$/.test(product.auction_start_time!)) {
+            start = parseInt(product.auction_start_time!) * 1000;
+          } else {
+            start = new Date(product.auction_start_time!).getTime();
+          }
+        }
+        
         const now = new Date().getTime();
+
+        // Check if not started yet
+        if (start && now < start) {
+          const diff = start - now;
+          const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+          const secs = Math.floor((diff % (1000 * 60)) / 1000);
+          setTimeLeft(`Starts in: ${days > 0 ? days + 'd ' : ''}${hours}h ${mins}m ${secs}s`);
+          return false;
+        }
+
         const diff = end - now;
 
-        if (diff <= 0) {
+        if (isNaN(end) || diff <= 0) {
           setTimeLeft('Ended');
-          clearInterval(timer);
+          return true; // Stop timer
         } else {
           const days = Math.floor(diff / (1000 * 60 * 60 * 24));
           const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
           const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
           const secs = Math.floor((diff % (1000 * 60)) / 1000);
           setTimeLeft(`${days > 0 ? days + 'd ' : ''}${hours}h ${mins}m ${secs}s`);
+          return false; // Continue timer
         }
+      };
+
+      // Wrap initial call in requestAnimationFrame to avoid synchronous setState warning
+      const frameId = requestAnimationFrame(() => {
+        updateTimer();
+      });
+
+      const timer = setInterval(() => {
+        const isEnded = updateTimer();
+        if (isEnded) clearInterval(timer);
       }, 1000);
-      return () => clearInterval(timer);
+
+      return () => {
+        cancelAnimationFrame(frameId);
+        clearInterval(timer);
+      };
     }
   }, [product]);
 
@@ -128,6 +214,19 @@ const ProductDetail: React.FC = () => {
     } finally {
       setPlacingBid(false);
     }
+  };
+
+  const handleAddToCart = (buyNow: boolean = false) => {
+    if (!product) return;
+    
+    // Redirect to WordPress cart/checkout
+    // buyNow=true uses the direct checkout parameter
+    const baseUrl = "https://bidsnbuy.ng/cart/";
+    const checkoutUrl = "https://bidsnbuy.ng/checkout/";
+    const targetUrl = buyNow ? checkoutUrl : baseUrl;
+    
+    // Add item to cart via URL parameter (WooCommerce standard)
+    window.location.href = `${targetUrl}?add-to-cart=${product.id}`;
   };
 
   if (loading) {
@@ -165,6 +264,24 @@ const ProductDetail: React.FC = () => {
   }
 
   const isAuction = product.is_auction || product.type === 'auction' || product.categories.some(c => c.slug === 'auctions' || c.slug === 'bidding');
+
+  const formatDate = (dateStr: string | undefined) => {
+    if (!dateStr) return 'Not set';
+    let date;
+    if (/^\d+$/.test(dateStr)) {
+      date = new Date(parseInt(dateStr) * 1000);
+    } else {
+      date = new Date(dateStr);
+    }
+    return isNaN(date.getTime()) ? 'Invalid Date' : date.toLocaleString('en-NG', {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
   return (
     <div className="bg-white min-h-screen pb-20">
@@ -213,7 +330,7 @@ const ProductDetail: React.FC = () => {
             <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-hide">
               {product.images.map((img, idx) => (
                 <button 
-                  key={img.id}
+                  key={`${img.id}-${idx}`}
                   onClick={() => setCurrentImageIndex(idx)}
                   className={`relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all ${currentImageIndex === idx ? 'border-brand-blue scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
                 >
@@ -259,6 +376,18 @@ const ProductDetail: React.FC = () => {
                     <div className="text-right">
                       <p className="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Total Bids</p>
                       <p className="text-4xl font-black tabular-nums">{product.bid_count || 0}</p>
+                    </div>
+                  </div>
+
+                  {/* Auction Dates */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-8 pt-6 border-t border-white/10">
+                    <div className="bg-white/5 p-4 rounded-2xl">
+                      <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Starts</p>
+                      <p className="text-xs font-bold text-white/90">{formatDate(product.auction_start_time)}</p>
+                    </div>
+                    <div className="bg-white/5 p-4 rounded-2xl">
+                      <p className="text-white/40 text-[10px] font-black uppercase tracking-widest mb-1">Ends</p>
+                      <p className="text-xs font-bold text-white/90">{formatDate(product.auction_end_time)}</p>
                     </div>
                   </div>
 
@@ -334,10 +463,22 @@ const ProductDetail: React.FC = () => {
                   )}
                 </div>
 
-                <button className="w-full bg-brand-dark text-white py-5 rounded-2xl text-xl font-black hover:bg-brand-blue transition-all shadow-xl shadow-brand-dark/10 flex items-center justify-center space-x-3 group">
-                  <ShoppingBag className="w-6 h-6" />
-                  <span>Add to Cart</span>
-                </button>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <button 
+                    onClick={() => handleAddToCart(false)}
+                    className="flex-1 bg-brand-blue/10 text-brand-blue py-5 rounded-2xl text-lg font-black hover:bg-brand-blue hover:text-white transition-all shadow-lg flex items-center justify-center space-x-3 group"
+                  >
+                    <ShoppingBag className="w-6 h-6" />
+                    <span>Add to Cart</span>
+                  </button>
+                  <button 
+                    onClick={() => handleAddToCart(true)}
+                    className="flex-1 bg-brand-dark text-white py-5 rounded-2xl text-lg font-black hover:bg-brand-blue transition-all shadow-xl shadow-brand-dark/10 flex items-center justify-center space-x-3 group"
+                  >
+                    <Zap className="w-6 h-6 fill-current text-white" />
+                    <span>Buy It Now</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -527,6 +668,38 @@ const ProductDetail: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* --- UPSELLING SECTION: YOU MAY ALSO LIKE --- */}
+      {relatedProducts.length > 0 && (
+        <section className="py-24 bg-gray-50/50 border-t border-gray-100">
+          <div className="container mx-auto px-4 max-w-[1440px]">
+            <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 gap-8 text-center md:text-left">
+              <div className="max-w-2xl">
+                <div className="flex items-center space-x-3 text-brand-orange font-black text-sm tracking-[0.3em] uppercase mb-4 justify-center md:justify-start">
+                  <Sparkles className="w-5 h-5 text-brand-orange" />
+                  <span>Curated for you</span>
+                </div>
+                <h2 className="text-4xl lg:text-6xl font-black text-gray-900 tracking-tight">You may <span className="text-gray-400 italic">also like</span></h2>
+              </div>
+              <button 
+                onClick={() => navigate('/products')}
+                className="bg-white hover:bg-brand-dark hover:text-white text-brand-dark border-2 border-gray-100 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center group shadow-sm hover:shadow-xl"
+              >
+                Explore More
+                <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {relatedProducts.map((relProduct) => (
+                <div key={relProduct.id} className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                  <ProductCard product={relProduct} key={relProduct.id} />
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       <AuthModal 
         isOpen={isAuthModalOpen} 

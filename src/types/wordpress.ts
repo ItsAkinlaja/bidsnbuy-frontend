@@ -58,6 +58,8 @@ export interface WPProduct {
   bid_count?: number;
   auction_end_time?: string;
   auction_start_time?: string;
+  yith_auction_to?: string;
+  yith_auction_from?: string;
   auction_start_price?: string;
   auction_bid_increment?: string;
   auction_reserved_price?: string;
