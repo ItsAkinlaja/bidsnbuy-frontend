@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Hammer, Clock, Users, Flame, ChevronRight } from 'lucide-react';
 import type { WPProduct } from '../types/wordpress';
+import { decodeHtml } from '../utils/decode';
 
 interface ProductCardProps {
   product: WPProduct;
@@ -150,7 +151,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
           <div className="flex flex-wrap gap-2">
             {product.categories?.slice(0, 1).map(cat => (
               <span key={cat.id} className="text-[10px] uppercase tracking-[0.2em] text-gray-400 font-black">
-                {cat.name}
+                {decodeHtml(cat.name)}
               </span>
             ))}
           </div>
@@ -164,7 +165,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
         
         <Link to={`/product/${product.slug}`}>
           <h3 className="text-xl font-black text-brand-dark mb-4 line-clamp-2 leading-tight group-hover:text-brand-blue transition-colors">
-            {product.name}
+            {decodeHtml(product.name)}
           </h3>
         </Link>
 

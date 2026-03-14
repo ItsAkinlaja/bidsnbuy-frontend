@@ -7,6 +7,7 @@ import { useNotification } from '../context/NotificationContext';
 import AuthModal from '../components/AuthModal';
 import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
+import { decodeHtml } from '../utils/decode';
 import type { WPProduct } from '../types/wordpress';
 import { 
   Loader2, 
@@ -286,8 +287,8 @@ const ProductDetail: React.FC = () => {
   return (
     <div className="bg-white min-h-screen pb-20">
       <SEO 
-        title={product.name} 
-        description={product.description?.replace(/<[^>]*>/g, '').slice(0, 160) || `Bid on ${product.name} at BidsnBuy. Nigeria's premier auction platform.`} 
+        title={decodeHtml(product.name)} 
+        description={product.description?.replace(/<[^>]*>/g, '').slice(0, 160) || `Bid on ${decodeHtml(product.name)} at BidsnBuy. Nigeria's premier auction platform.`} 
       />
       <div className="container mx-auto px-4 py-12">
         {/* Breadcrumb */}
@@ -296,7 +297,7 @@ const ProductDetail: React.FC = () => {
           <span>/</span>
           <button onClick={() => navigate('/products')} className="hover:text-brand-blue">Store</button>
           <span>/</span>
-          <span className="text-gray-900 truncate max-w-[200px]">{product.name}</span>
+          <span className="text-gray-900 truncate max-w-[200px]">{decodeHtml(product.name)}</span>
         </nav>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
@@ -305,7 +306,7 @@ const ProductDetail: React.FC = () => {
             <div className="relative aspect-square rounded-[40px] overflow-hidden bg-gray-50 border border-gray-100">
               <img 
                 src={product.images[currentImageIndex]?.src || 'https://via.placeholder.com/800x800?text=No+Image'} 
-                alt={product.name}
+                alt={decodeHtml(product.name)}
                 className="w-full h-full object-cover"
               />
               
@@ -332,7 +333,7 @@ const ProductDetail: React.FC = () => {
                 <button 
                   key={`${img.id}-${idx}`}
                   onClick={() => setCurrentImageIndex(idx)}
-                  className={`relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all ${currentImageIndex === idx ? 'border-brand-blue scale-105' : 'border-transparent opacity-60 hover:opacity-100'}`}
+                  className="relative w-24 h-24 rounded-2xl overflow-hidden flex-shrink-0 border-2 transition-all border-transparent opacity-60 hover:opacity-100"
                 >
                   <img src={img.src} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -345,14 +346,11 @@ const ProductDetail: React.FC = () => {
             <div className="mb-6">
               {product.categories.map(cat => (
                 <span key={cat.id} className="inline-block bg-brand-blue/5 text-brand-blue text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest mr-2 mb-2">
-                  {cat.name}
+                  {decodeHtml(cat.name)}
                 </span>
               ))}
             </div>
-
-            <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight mb-6">
-              {product.name}
-            </h1>
+            <h1 className="text-4xl lg:text-5xl font-black text-gray-900 mb-6 leading-[1.1]">{decodeHtml(product.name)}</h1>
 
             {isAuction ? (
               <>

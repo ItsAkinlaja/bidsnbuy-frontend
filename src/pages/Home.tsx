@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wpService } from '../services/wp-api';
 import { authService, type AuthResponse } from '../services/auth';
+import { decodeHtml } from '../utils/decode';
 import type { WPPost, WPProduct, WPCategory } from '../types/wordpress';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
@@ -170,10 +171,31 @@ const Home: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [user, setUser] = useState(() => authService.getUser());
 
-  // Helper to find WP category ID
-  const getWPId = (name: string) => {
-    const wpCat = categories.find(c => c.name.toLowerCase().includes(name.split(' & ')[0].toLowerCase()));
-    return wpCat?.id;
+  // Helper to find WP category ID with fuzzy matching and search fallback
+  const handleCategoryClick = (name: string, path?: string) => {
+    if (path) {
+      navigate(path);
+      return;
+    }
+
+    // 1. Try exact match
+    let wpCat = categories.find(c => c.name.toLowerCase() === name.toLowerCase());
+    
+    // 2. Try partial match (split ' & ' or ' / ')
+    if (!wpCat) {
+      const parts = name.split(/[&/]/).map(p => p.trim().toLowerCase());
+      wpCat = categories.find(c => {
+        const catName = c.name.toLowerCase();
+        return parts.some(p => catName.includes(p));
+      });
+    }
+
+    if (wpCat) {
+      navigate(`/products?category=${wpCat.id}`);
+    } else {
+      // 3. Fallback to search if no category exists yet
+      navigate(`/products?search=${encodeURIComponent(name)}`);
+    }
   };
 
   const slides = [
@@ -253,7 +275,7 @@ const Home: React.FC = () => {
       try {
         const fetchedAuctions = await wpService.getAuctions({ 
           per_page: 4,
-          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created'
+          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
         setAuctions(fetchedAuctions);
       } catch (err) {
@@ -270,7 +292,7 @@ const Home: React.FC = () => {
           per_page: 4, 
           orderby: 'date', 
           order: 'desc',
-          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created'
+          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
         setNewArrivals(fetchedNewArrivals);
       } catch (err) {
@@ -286,7 +308,7 @@ const Home: React.FC = () => {
         const fetchedJustForYou = await wpService.getProducts({ 
           per_page: 8, 
           orderby: 'random',
-          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created'
+          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
         setJustForYou(fetchedJustForYou);
       } catch (err) {
@@ -343,20 +365,14 @@ const Home: React.FC = () => {
           {categoryHierarchy.map((item) => (
             <button
               key={item.name}
-              onClick={() => {
-                if (item.path) navigate(item.path);
-                else {
-                  const id = getWPId(item.name);
-                  navigate(id ? `/products?category=${id}` : '/products');
-                }
-              }}
+              onClick={() => handleCategoryClick(item.name, item.path)}
               className="flex flex-col items-center space-y-2 group"
             >
               <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center active:bg-brand-blue active:text-white transition-all shadow-sm border border-gray-100">
                 <item.icon className="w-6 h-6 text-gray-400 group-active:text-white transition-colors" />
               </div>
               <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest group-active:text-brand-blue">
-                {item.name.split(' & ')[0]}
+                {decodeHtml(item.name.split(' & ')[0])}
               </span>
             </button>
           ))}
@@ -570,26 +586,13 @@ const Home: React.FC = () => {
                 <ProductCard key={product.id} product={product} isAuction={true} />
               ))
             ) : (
-              // Empty State Mockups for Bidding
-              [1, 2, 3, 4].map(i => (
-                <div key={i} className="opacity-40 grayscale pointer-events-none">
-                  <ProductCard 
-                    product={{
-                      id: i,
-                      name: "Sample Auction Item",
-                      price: "150000",
-                      images: [{ src: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=400", id: 1, name: "", alt: "" }],
-                      categories: [{ id: 1, name: "Electronics", slug: "electronics" }],
-                      auction_end_time: new Date(Date.now() + 3600000 * i).toISOString(),
-                      date_created: new Date().toISOString(),
-                      current_bid: "45000",
-                      is_auction: true,
-                      slug: "", description: "", short_description: "", regular_price: "", sale_price: "", on_sale: false, status: "", stock_status: ""
-                    }} 
-                    isAuction={true} 
-                  />
+              <div className="col-span-full py-20 text-center bg-white rounded-[40px] border-2 border-dashed border-gray-100">
+                <div className="w-20 h-20 bg-gray-50 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                  <Hammer className="w-10 h-10 text-gray-300" />
                 </div>
-              ))
+                <h3 className="text-2xl font-black text-gray-900 mb-2">No Live Auctions</h3>
+                <p className="text-gray-500 font-medium">Check back soon for new exciting auctions!</p>
+              </div>
             )}
           </div>
         </div>

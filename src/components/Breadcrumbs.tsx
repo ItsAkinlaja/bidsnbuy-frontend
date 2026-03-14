@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight, Home } from 'lucide-react';
 import { useBreadcrumb } from '../context/BreadcrumbContext';
+import { decodeHtml } from '../utils/decode';
 
 const Breadcrumbs: React.FC = () => {
   const { customTitle, setCustomTitle } = useBreadcrumb();
@@ -64,14 +65,14 @@ const Breadcrumbs: React.FC = () => {
                   <ChevronRight className="w-3.5 h-3.5 mx-3 text-gray-300 shrink-0" />
                   {last ? (
                     <span className="text-brand-dark font-black truncate max-w-[150px] sm:max-w-xs bg-brand-blue/5 px-3 py-1.5 rounded-lg border border-brand-blue/10">
-                      {label}
+                      {decodeHtml(label)}
                     </span>
                   ) : (
                     <Link 
                       to={to} 
                       className="hover:text-brand-blue transition-colors"
                     >
-                      {label}
+                      {decodeHtml(label)}
                     </Link>
                   )}
                 </li>

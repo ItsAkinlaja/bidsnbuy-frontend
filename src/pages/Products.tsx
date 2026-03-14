@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { wpService } from '../services/wp-api';
+import { decodeHtml } from '../utils/decode';
 import type { WPProduct, WPCategory } from '../types/wordpress';
 import ProductCard from '../components/ProductCard';
 import { 
@@ -111,6 +112,28 @@ const Products: React.FC = () => {
       </div>
 
       <div className="container mx-auto px-4 py-12">
+        {/* Search Status Header (Dynamic) */}
+        {(searchTerm || selectedCategory) && (
+          <div className="mb-12 flex flex-wrap items-center gap-4 animate-in fade-in slide-in-from-left-4 duration-500">
+            <div className="flex items-center space-x-3 bg-brand-blue/5 border border-brand-blue/10 px-6 py-3 rounded-2xl">
+              <span className="text-xs font-black text-gray-400 uppercase tracking-widest">Showing results for:</span>
+              <span className="text-sm font-black text-brand-blue uppercase">
+                {searchTerm ? `"${searchTerm}"` : categories.find(c => c.id === selectedCategory)?.name || 'Category'}
+              </span>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  setSelectedCategory(null);
+                }}
+                className="ml-4 text-gray-400 hover:text-red-500 transition-colors"
+              >
+                <Filter className="w-4 h-4" />
+              </button>
+            </div>
+            <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">{products.length} Items Found</span>
+          </div>
+        )}
+
         <div className="flex flex-col lg:flex-row gap-12">
           {/* Sidebar: Categories & Subcategories */}
           <aside className="w-full lg:w-72 flex-shrink-0">
@@ -134,7 +157,7 @@ const Products: React.FC = () => {
                       onClick={() => setSelectedCategory(parent.id)}
                       className={`w-full text-left text-sm font-black uppercase tracking-widest transition-colors flex items-center justify-between group ${selectedCategory === parent.id ? 'text-brand-blue' : 'text-gray-900 hover:text-brand-blue'}`}
                     >
-                      <span>{parent.name}</span>
+                      <span>{decodeHtml(parent.name)}</span>
                       <span className="text-[10px] text-gray-300 font-bold group-hover:text-brand-blue">{parent.count}</span>
                     </button>
 
@@ -147,7 +170,7 @@ const Products: React.FC = () => {
                             onClick={() => setSelectedCategory(child.id)}
                             className={`w-full text-left text-xs font-bold transition-colors block py-1 ${selectedCategory === child.id ? 'text-brand-orange' : 'text-gray-400 hover:text-brand-blue'}`}
                           >
-                            {child.name}
+                            {decodeHtml(child.name)}
                             <span className="ml-2 text-[9px] opacity-50">({child.count})</span>
                           </button>
                         ))}

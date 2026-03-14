@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { wpService } from '../services/wp-api';
+import { decodeHtml } from '../utils/decode';
 import type { AuthResponse } from '../services/auth';
 import type { WPCategory } from '../types/wordpress';
 import AuthModal from './AuthModal';
@@ -173,6 +174,33 @@ const Header: React.FC = () => {
 
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
+  // Helper to find WP category ID with fuzzy matching and search fallback
+  const handleCategoryClick = (name: string, path?: string) => {
+    if (path) {
+      navigate(path);
+      return;
+    }
+
+    // 1. Try exact match
+    let wpCat = dynamicCategories.find(c => c.name.toLowerCase() === name.toLowerCase());
+    
+    // 2. Try partial match (split ' & ' or ' / ')
+    if (!wpCat) {
+      const parts = name.split(/[&/]/).map(p => p.trim().toLowerCase());
+      wpCat = dynamicCategories.find(c => {
+        const catName = c.name.toLowerCase();
+        return parts.some(p => catName.includes(p));
+      });
+    }
+
+    if (wpCat) {
+      navigate(`/products?category=${wpCat.id}`);
+    } else {
+      // 3. Fallback to search if no category exists yet
+      navigate(`/products?search=${encodeURIComponent(name)}`);
+    }
+  };
+
   // Fetch dynamic categories
   useEffect(() => {
     const fetchCats = async () => {
@@ -237,6 +265,13 @@ const Header: React.FC = () => {
     window.location.reload();
   };
 
+  const handleSearchSubmit = (query: string) => {
+    if (!query.trim()) return;
+    navigate(`/products?search=${encodeURIComponent(query.trim())}`);
+    setIsSearchOpen(false);
+    setIsMobileMenuOpen(false);
+  };
+
   return (
     <>
       <header className={`w-full z-50 bg-white fixed top-0 shadow-sm transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
@@ -272,7 +307,7 @@ const Header: React.FC = () => {
               onSubmit={(e) => {
                 e.preventDefault();
                 const query = (e.currentTarget.elements.namedItem('search') as HTMLInputElement).value;
-                if (query) navigate(`/products?search=${encodeURIComponent(query)}`);
+                handleSearchSubmit(query);
               }}
               className="hidden lg:flex flex-grow max-w-2xl relative group"
             >
@@ -366,8 +401,7 @@ const Header: React.FC = () => {
                 className="w-full bg-gray-50 border-2 border-brand-blue rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') {
-                    navigate(`/products?search=${encodeURIComponent(e.currentTarget.value)}`);
-                    setIsSearchOpen(false);
+                    handleSearchSubmit(e.currentTarget.value);
                   }
                 }}
               />
@@ -397,12 +431,7 @@ const Header: React.FC = () => {
                       <div key={item.name} className="space-y-4">
                         <button 
                           onClick={() => {
-                            if (item.path) {
-                              navigate(item.path);
-                            } else {
-                              const wpCat = dynamicCategories.find(c => c.name.toLowerCase().includes(item.name.split(' & ')[0].toLowerCase()));
-                              navigate(wpCat ? `/products?category=${wpCat.id}` : '/products');
-                            }
+                            handleCategoryClick(item.name, item.path);
                             setIsCatOpen(false);
                           }}
                           className="flex items-center space-x-3 group"
@@ -410,7 +439,7 @@ const Header: React.FC = () => {
                           <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center group-hover:bg-brand-blue transition-colors shadow-sm">
                             <item.icon className="w-5 h-5 text-gray-400 group-hover:text-white transition-colors" />
                           </div>
-                          <span className="text-sm font-black text-gray-900 group-hover:text-brand-blue uppercase tracking-widest text-left">{item.name}</span>
+                          <span className="text-sm font-black text-gray-900 group-hover:text-brand-blue uppercase tracking-widest text-left">{decodeHtml(item.name)}</span>
                         </button>
 
                         <div className="space-y-2 pl-13">
@@ -418,13 +447,12 @@ const Header: React.FC = () => {
                             <button 
                               key={sub.name}
                               onClick={() => {
-                                const wpSub = dynamicCategories.find(c => c.name.toLowerCase() === sub.name.toLowerCase());
-                                navigate(wpSub ? `/products?category=${wpSub.id}` : '/products');
+                                handleCategoryClick(sub.name);
                                 setIsCatOpen(false);
                               }}
                               className="block text-xs font-bold text-gray-400 hover:text-brand-orange transition-colors text-left"
                             >
-                              {sub.name}
+                              {decodeHtml(sub.name)}
                             </button>
                           ))}
                         </div>
@@ -465,7 +493,7 @@ const Header: React.FC = () => {
                   to={item.path}
                   className="px-4 py-2 text-[10px] font-black text-gray-500 hover:text-brand-blue uppercase tracking-[0.2em] transition-colors relative group"
                 >
-                  {item.name}
+                  {decodeHtml(item.name)}
                   <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-brand-orange scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
                 </Link>
               ))}
@@ -631,8 +659,7 @@ const Header: React.FC = () => {
                             <button 
                               key={sub.name}
                               onClick={() => {
-                                const wpSub = dynamicCategories.find(c => c.name.toLowerCase() === sub.name.toLowerCase());
-                                navigate(wpSub ? `/products?category=${wpSub.id}` : '/products');
+                                handleCategoryClick(sub.name);
                                 setIsMobileMenuOpen(false);
                               }}
                               className="block w-full text-left py-2.5 text-xs font-bold text-gray-400 hover:text-brand-orange transition-colors"
