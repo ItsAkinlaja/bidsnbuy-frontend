@@ -31,7 +31,9 @@ import {
   UtensilsCrossed,
   Heart,
   Smartphone,
-  Loader2
+  Loader2,
+  Truck,
+  ShieldCheck
 } from 'lucide-react';
 
 const categoryHierarchy = [
@@ -297,15 +299,36 @@ const Header: React.FC = () => {
     <>
       <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
         {/* Top Announcement Bar */}
-        <div className="bg-brand-dark py-2 overflow-hidden border-b border-white/5 relative z-[101]">
+        <div className="bg-gradient-to-r from-brand-dark via-brand-blue/90 to-brand-dark py-2.5 overflow-hidden border-b border-white/10 relative z-[101] shadow-sm">
           <div className="animate-marquee whitespace-nowrap flex items-center">
-            {[...Array(10)].map((_, i) => (
-              <div key={i} className="flex items-center mx-12">
-                <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">
-                  Free Delivery when you spend over <span className="text-brand-orange">₦150,000</span>
-                </span>
-                <div className="mx-8 w-1.5 h-1.5 bg-brand-blue rounded-full" />
-                <Zap className="w-3.5 h-3.5 text-brand-orange fill-current" />
+            {[...Array(8)].map((_, i) => (
+              <div key={i} className="flex items-center mx-16 group cursor-default">
+                <div className="flex items-center space-x-3">
+                  <div className="p-1 bg-brand-orange/20 rounded-lg group-hover:scale-110 transition-transform duration-500">
+                    <Truck className="w-3.5 h-3.5 text-brand-orange animate-pulse" />
+                  </div>
+                  <span className="text-white text-[11px] font-black uppercase tracking-[0.25em] drop-shadow-sm">
+                    Free Delivery on orders above <span className="text-brand-orange bg-brand-orange/10 px-2 py-0.5 rounded-md border border-brand-orange/20">₦150,000</span>
+                  </span>
+                </div>
+                <div className="mx-12 flex items-center space-x-2 opacity-30">
+                  <div className="w-1.5 h-1.5 bg-brand-orange rounded-full animate-ping" />
+                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-brand-blue rounded-full" />
+                </div>
+                <div className="flex items-center space-x-3">
+                  <div className="p-1 bg-brand-blue/20 rounded-lg group-hover:rotate-12 transition-transform duration-500">
+                    <ShieldCheck className="w-3.5 h-3.5 text-brand-blue" />
+                  </div>
+                  <span className="text-white/90 text-[11px] font-black uppercase tracking-[0.25em]">
+                    100% Secured <span className="text-brand-blue">Shopping</span>
+                  </span>
+                </div>
+                <div className="mx-12 flex items-center space-x-2 opacity-30">
+                  <div className="w-1.5 h-1.5 bg-brand-blue rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-white rounded-full" />
+                  <div className="w-1.5 h-1.5 bg-brand-orange rounded-full" />
+                </div>
               </div>
             ))}
           </div>
