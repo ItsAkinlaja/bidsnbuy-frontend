@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { authService } from '../services/auth';
 import { wpService } from '../services/wp-api';
 import { decodeHtml } from '../utils/decode';
+import { useCart } from '../context/CartContext';
 import type { AuthResponse } from '../services/auth';
 import type { WPCategory } from '../types/wordpress';
 import AuthModal from './AuthModal';
@@ -174,6 +175,7 @@ const Header: React.FC = () => {
   const [isSearching, setIsSearching] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const { cartCount } = useCart();
 
   const [hoveredCategory, setHoveredCategory] = useState<string | null>(null);
 
@@ -293,7 +295,22 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className={`w-full z-50 bg-white fixed top-0 shadow-sm transition-transform duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+        {/* Top Announcement Bar */}
+        <div className="bg-brand-dark py-2 overflow-hidden border-b border-white/5 relative z-[101]">
+          <div className="animate-marquee whitespace-nowrap flex items-center">
+            {[...Array(10)].map((_, i) => (
+              <div key={i} className="flex items-center mx-12">
+                <span className="text-white text-[10px] font-black uppercase tracking-[0.2em]">
+                  Free Delivery when you spend over <span className="text-brand-orange">₦150,000</span>
+                </span>
+                <div className="mx-8 w-1.5 h-1.5 bg-brand-blue rounded-full" />
+                <Zap className="w-3.5 h-3.5 text-brand-orange fill-current" />
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* --- TOP HEADER (Logo & Main Actions) --- */}
         <div className="border-b border-gray-100">
           <div className="container mx-auto px-4 py-3 lg:py-5 flex items-center justify-between gap-4 lg:gap-8">
@@ -362,10 +379,17 @@ const Header: React.FC = () => {
                 <Search className="w-6 h-6" />
               </button>
 
-              <button className="flex flex-col items-center group relative">
+              <button 
+                onClick={() => navigate('/checkout')}
+                className="flex flex-col items-center group relative"
+              >
                 <div className="p-2 text-gray-400 group-hover:text-brand-blue transition-colors">
                   <ShoppingCart className="w-6 h-6 lg:w-7 lg:h-7" />
-                  <span className="absolute top-1 right-1 w-5 h-5 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full font-bold border-2 border-white">0</span>
+                  {cartCount > 0 && (
+                    <span className="absolute top-1 right-1 w-5 h-5 bg-brand-orange text-[10px] text-white flex items-center justify-center rounded-full font-bold border-2 border-white animate-in zoom-in duration-300">
+                      {cartCount}
+                    </span>
+                  )}
                 </div>
                 <span className="hidden lg:block text-[10px] font-bold uppercase tracking-widest text-gray-400 group-hover:text-brand-blue">Cart</span>
               </button>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Hammer, Clock, Users, Flame, ChevronRight } from 'lucide-react';
+import { useCart } from '../context/CartContext';
+import { useNotification } from '../context/NotificationContext';
 import type { WPProduct } from '../types/wordpress';
 import { decodeHtml } from '../utils/decode';
 
@@ -10,6 +12,9 @@ interface ProductCardProps {
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
+  const { addToCart } = useCart();
+  const { showNotification } = useNotification();
+
   const [timeLeft, setTimeLeft] = useState<{
     hours: string;
     mins: string;
@@ -91,6 +96,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
       };
     }
   }, [isAuction, product.is_auction, product.auction_end_time]);
+
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product);
+    showNotification({
+      title: 'Added to Cart',
+      message: `${product.name} has been added to your cart.`,
+      type: 'success'
+    });
+  };
 
   const imageUrl = product.images?.[0]?.src || 'https://via.placeholder.com/300x300?text=No+Image';
 
@@ -216,12 +232,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
               )}
               <span className="text-2xl font-black text-brand-dark tracking-tighter">₦{parseFloat(product.price || '0').toLocaleString()}</span>
             </div>
-            <Link 
-              to={`/product/${product.slug}`}
+            <button 
+              onClick={handleAddToCart}
               className="bg-brand-blue/10 hover:bg-brand-blue text-brand-blue hover:text-white px-6 py-3 rounded-xl text-xs font-black uppercase tracking-widest transition-all duration-300"
             >
-              Buy Now
-            </Link>
+              Add to Cart
+            </button>
           </div>
         )}
       </div>

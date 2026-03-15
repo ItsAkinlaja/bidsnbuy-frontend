@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wpService } from '../services/wp-api';
-import { authService, type AuthResponse } from '../services/auth';
 import { decodeHtml } from '../utils/decode';
 import type { WPPost, WPProduct, WPCategory } from '../types/wordpress';
 import ProductCard from '../components/ProductCard';
@@ -16,9 +15,7 @@ import {
   Zap, 
   ShieldCheck, 
   ArrowRight, 
-  Trophy, 
   TrendingUp,
-  Sparkles,
   Smartphone,
   Shirt,
   Home as HomeIcon,
@@ -28,7 +25,10 @@ import {
   Baby,
   Dumbbell,
   Car,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Truck,
+  Grid3X3,
+  ShoppingBag
 } from 'lucide-react';
 
 const categoryHierarchy = [
@@ -169,7 +169,6 @@ const Home: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [user, setUser] = useState(() => authService.getUser());
 
   // Helper to find WP category ID with fuzzy matching and search fallback
   const handleCategoryClick = (name: string, path?: string) => {
@@ -211,7 +210,7 @@ const Home: React.FC = () => {
       ),
       description: "Nigeria's premier destination for both thrill-seekers and direct shoppers. Bid on high-end items or buy directly from our exclusive collection.",
       image: "https://bidsnbuy.ng/wp-content/uploads/2025/11/Untitled-design-8.png",
-      mobileBg: "https://images.unsplash.com/photo-1554224155-1696413575b3?auto=format&fit=crop&q=80&w=1000",
+      mobileBg: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=1000",
       accent: "bg-brand-blue/10 text-brand-blue",
       accentText: "NG'S #1 BID & BUY DESTINATION"
     },
@@ -239,10 +238,23 @@ const Home: React.FC = () => {
       ),
       description: "From designer watches to luxury collectibles. Bid on the finest items or shop our curated luxury catalog for instant ownership.",
       image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?auto=format&fit=crop&q=80&w=800",
-      mobileBg: "https://images.unsplash.com/photo-1614165933834-1db5bb284bc4?auto=format&fit=crop&q=80&w=1000",
+      mobileBg: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&q=80&w=1000",
       accent: "bg-brand-blue/10 text-brand-blue",
       accentText: "LUXURY & STYLE AUCTIONS"
     }
+  ];
+
+  const brands = [
+    { name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
+    { name: "Samsung", logo: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg" },
+    { name: "Tecno", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b7/TECNO_Mobile_logo.svg" },
+    { name: "Infinix", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Infinix_Logo.svg" },
+    { name: "Syinix", logo: "https://syinix.com/wp-content/uploads/2021/06/syinix-logo.png" },
+    { name: "HP", logo: "https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg" },
+    { name: "Dell", logo: "https://upload.wikimedia.org/wikipedia/commons/4/48/Dell_Logo.svg" },
+    { name: "Sony", logo: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg" },
+    { name: "LG", logo: "https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg" },
+    { name: "Canon", logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Canon_logo.svg" }
   ];
 
   useEffect(() => {
@@ -252,6 +264,7 @@ const Home: React.FC = () => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 6000);
+    
     return () => {
       clearInterval(timer);
       clearTimeout(loaderTimer);
@@ -289,12 +302,13 @@ const Home: React.FC = () => {
     const fetchArrivals = async () => {
       try {
         const fetchedNewArrivals = await wpService.getProducts({ 
-          per_page: 4, 
+          per_page: 10, // Fetch more to filter out auctions
           orderby: 'date', 
           order: 'desc',
           _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
-        setNewArrivals(fetchedNewArrivals);
+        // Filter out auctions for "Warehouse Direct" section
+        setNewArrivals(fetchedNewArrivals.filter(p => !p.is_auction).slice(0, 4));
       } catch (err) {
         console.error('Error fetching arrivals:', err);
         setError('Failed to load some content. Please check your connection.');
@@ -306,11 +320,12 @@ const Home: React.FC = () => {
     const fetchDeals = async () => {
       try {
         const fetchedJustForYou = await wpService.getProducts({ 
-          per_page: 8, 
-          orderby: 'random',
+          per_page: 20, // Fetch more to filter and find deals
+          on_sale: true,
           _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
-        setJustForYou(fetchedJustForYou);
+        // Filter out auctions and keep retail deals
+        setJustForYou(fetchedJustForYou.filter(p => !p.is_auction).slice(0, 8));
       } catch (err) {
         console.error('Error fetching deals:', err);
         setError('Failed to load some content. Please check your connection.');
@@ -329,13 +344,18 @@ const Home: React.FC = () => {
       }
     };
 
-    // Parallel fetching for performance
+  // Parallel fetching for performance
     fetchPosts();
     fetchAuctions();
     fetchArrivals();
     fetchDeals();
     fetchCats();
   }, []);
+
+  // Find the highest bid from live auctions for the hero section
+  const highestBid = auctions.length > 0 
+    ? Math.max(...auctions.map(a => parseFloat(a.current_bid || a.price || '0')))
+    : 450000;
 
   return (
     <div className="bg-white selection:bg-brand-blue/10 selection:text-brand-blue">
@@ -380,7 +400,7 @@ const Home: React.FC = () => {
       </div>
 
       {/* --- HERO SECTION --- */}
-      <section className="relative bg-[#f8fafc] overflow-hidden mb-16 min-h-[600px] lg:min-h-0">
+      <section className="relative bg-[#f8fafc] overflow-hidden mb-8 lg:mb-16 min-h-[550px] lg:min-h-0">
         {/* Background Accents (Desktop Only) */}
         <div className="hidden lg:block absolute top-0 right-0 -translate-y-1/2 translate-x-1/4 w-[1000px] h-[1000px] bg-brand-blue/5 rounded-full blur-[120px] opacity-40" />
         <div className="hidden lg:block absolute bottom-0 left-0 translate-y-1/2 -translate-x-1/4 w-[800px] h-[800px] bg-brand-orange/5 rounded-full blur-[120px] opacity-30" />
@@ -389,60 +409,63 @@ const Home: React.FC = () => {
           <div className="flex flex-col items-center py-0 lg:py-12">
             
             {/* --- HERO SLIDER CONTENT --- */}
-            <div className="w-full relative h-[650px] lg:h-[750px]">
+            <div className="w-full relative h-[600px] lg:h-[750px]">
               {slides.map((slide, index) => (
                 <div 
                   key={slide.id}
                   className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-16 transition-all duration-1000 absolute inset-0 ${index === currentSlide ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-20 pointer-events-none'}`}
                   style={{ position: index === currentSlide ? 'relative' : 'absolute' }}
                 >
-                  {/* Mobile Captivating Background */}
+                  {/* Mobile Premium Visual (Improved) */}
                   <div className="lg:hidden absolute inset-0 z-0">
                     <img 
                       src={slide.mobileBg} 
                       alt="" 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover scale-105"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/80 via-brand-dark/40 to-brand-dark/90" />
+                    <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/70 via-brand-dark/30 to-brand-dark/95" />
+                    {/* Decorative Elements */}
+                    <div className="absolute top-20 right-[-10%] w-64 h-64 bg-brand-blue/20 rounded-full blur-3xl" />
+                    <div className="absolute bottom-20 left-[-10%] w-64 h-64 bg-brand-orange/10 rounded-full blur-3xl" />
                   </div>
 
-                  <div className="left-side lg:w-1/2 text-center lg:text-left py-12 px-6 lg:px-0 relative z-10">
-                    <div className={`inline-flex items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-xs font-bold mb-6 animate-fade-in`}>
+                  <div className="left-side lg:w-1/2 text-center lg:text-left pt-20 pb-12 px-6 lg:px-0 relative z-10 h-full flex flex-col justify-end lg:justify-center">
+                    <div className={`inline-flex items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black mb-4 sm:mb-6 animate-in slide-in-from-bottom duration-700 mx-auto lg:mx-0 w-fit`}>
                       <Zap className="w-3 h-3 fill-current" />
-                      <span className="lg:text-inherit text-white">{slide.accentText}</span>
+                      <span className="lg:text-inherit text-white uppercase tracking-widest">{slide.accentText}</span>
                     </div>
-                    <h1 className="text-5xl lg:text-6xl font-black text-white lg:text-gray-900 leading-[0.9] mb-6 tracking-tighter">
+                    <h1 className="text-[42px] sm:text-5xl lg:text-6xl font-black text-white lg:text-gray-900 leading-[0.95] mb-4 sm:mb-6 tracking-tighter animate-in slide-in-from-bottom duration-700 delay-100 drop-shadow-lg lg:drop-shadow-none">
                       {slide.title}
                     </h1>
-                    <p className="text-lg lg:text-xl text-gray-200 lg:text-gray-600 mb-8 max-w-lg leading-relaxed font-medium mx-auto lg:mx-0">
+                    <p className="text-base sm:text-lg lg:text-xl text-white lg:text-gray-600 mb-8 sm:mb-10 max-w-lg leading-relaxed font-black lg:font-medium mx-auto lg:mx-0 animate-in slide-in-from-bottom duration-700 delay-200 drop-shadow-lg lg:drop-shadow-none">
                       {slide.description}
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-in slide-in-from-bottom duration-700 delay-300">
                       <button 
                         onClick={() => navigate('/auctions')}
-                        className="bg-brand-orange lg:bg-brand-dark text-white px-8 py-4 rounded-2xl text-base font-black lg:font-bold hover:bg-brand-blue transition-all duration-300 shadow-2xl shadow-brand-dark/10 flex items-center justify-center group"
+                        className="bg-brand-orange lg:bg-brand-dark text-white px-8 py-4.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-brand-blue transition-all duration-300 shadow-2xl shadow-brand-dark/40 flex items-center justify-center group active:scale-95"
                       >
                         Live Auctions
-                        <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                       <button 
                         onClick={() => navigate('/products')}
-                        className="bg-white/10 lg:bg-white backdrop-blur-md lg:backdrop-blur-none text-white lg:text-brand-dark border-2 border-white/20 lg:border-gray-100 px-8 py-4 rounded-2xl text-base font-black lg:font-bold hover:border-brand-blue hover:text-brand-blue transition-all duration-300 flex items-center justify-center"
+                        className="bg-white/20 lg:bg-white backdrop-blur-2xl lg:backdrop-blur-none text-white lg:text-brand-dark border border-white/40 lg:border-gray-100 px-8 py-4.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:border-brand-blue hover:text-brand-blue transition-all duration-300 flex items-center justify-center active:scale-95"
                       >
                         Shop Now
                       </button>
                     </div>
 
-                    <div className="mt-10 flex items-center justify-center lg:justify-start space-x-8">
-                      <div className="flex flex-col">
+                    <div className="mt-10 sm:mt-12 flex items-center justify-center lg:justify-start space-x-8 sm:space-x-12 animate-in slide-in-from-bottom duration-700 delay-400">
+                      <div className="flex flex-col items-center lg:items-start">
                         <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">50K+</span>
-                        <span className="text-[10px] lg:text-xs text-gray-300 lg:text-gray-500 font-bold uppercase tracking-widest text-center lg:text-left">Happy Users</span>
+                        <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Happy Users</span>
                       </div>
-                      <div className="w-px h-10 lg:h-8 bg-white/20 lg:bg-gray-100" />
-                      <div className="flex flex-col">
+                      <div className="w-px h-10 lg:h-8 bg-white/10 lg:bg-gray-100" />
+                      <div className="flex flex-col items-center lg:items-start">
                         <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">₦2.5B+</span>
-                        <span className="text-[10px] lg:text-xs text-gray-300 lg:text-gray-500 font-bold uppercase tracking-widest text-center lg:text-left">Successful Sales</span>
+                        <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Sales</span>
                       </div>
                     </div>
                   </div>
@@ -463,7 +486,7 @@ const Home: React.FC = () => {
                             </div>
                             <div>
                               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Highest Bid</p>
-                              <p className="text-xl font-black text-gray-900">₦450,000</p>
+                              <p className="text-xl font-black text-gray-900">₦{highestBid.toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
@@ -500,63 +523,107 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* --- MARQUEE SECTION --- */}
-      <section className="bg-brand-dark py-6 overflow-hidden border-y border-white/5">
-        <div className="animate-marquee whitespace-nowrap flex items-center">
-          {[...Array(10)].map((_, i) => (
-            <div key={i} className="flex items-center mx-8">
-              <span className="text-white text-lg lg:text-xl font-black uppercase tracking-[0.2em]">
-                Free Delivery when you spend over <span className="text-brand-orange">₦150,000</span>
-              </span>
-              <div className="mx-8 w-2 h-2 bg-brand-blue rounded-full" />
-              <Zap className="w-5 h-5 text-brand-orange fill-current" />
-            </div>
-          ))}
+      {/* --- BRAND LOGO MARQUEE (Primary Trust Bar) --- */}
+      <section className="py-12 bg-white border-b border-gray-50 overflow-hidden relative z-10">
+        <div className="container mx-auto px-4 mb-8">
+          <div className="flex items-center justify-center space-x-3 text-gray-400 font-black text-[10px] uppercase tracking-[0.3em]">
+            <div className="w-8 h-px bg-gray-200" />
+            <span>Authorized Premium Retailer</span>
+            <div className="w-8 h-px bg-gray-200" />
+          </div>
+        </div>
+        <div className="flex overflow-hidden">
+          <div className="flex animate-marquee whitespace-nowrap items-center py-4">
+            {brands.map((brand, i) => (
+              <div key={i} className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
+                <img src={brand.logo} alt={brand.name} className="h-6 lg:h-8 w-auto object-contain" />
+              </div>
+            ))}
+          </div>
+          {/* Duplicate for seamless loop */}
+          <div className="flex animate-marquee whitespace-nowrap items-center py-4" aria-hidden="true">
+            {brands.map((brand, i) => (
+              <div key={i} className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
+                <img src={brand.logo} alt={brand.name} className="h-6 lg:h-8 w-auto object-contain" />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* --- NEW ARRIVALS SECTION --- */}
-      <section className="py-24 bg-white">
+      {/* --- SHOP BY CATEGORY (Visual Grid) --- */}
+      <section className="py-16 lg:py-20 bg-white overflow-hidden">
         <div className="container mx-auto px-4 max-w-[1440px]">
-          <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 gap-8 text-center md:text-left">
-            <div className="max-w-2xl">
-              <div className="flex items-center space-x-3 text-brand-orange font-black text-sm tracking-[0.3em] uppercase mb-4 justify-center md:justify-start">
-                <Sparkles className="w-5 h-5" />
-                <span>Warehouse Direct</span>
-              </div>
-              <h2 className="text-5xl lg:text-7xl font-black text-gray-900 tracking-tight">New <span className="text-gray-400 italic">Arrivals</span></h2>
+          <div className="text-center mb-16">
+            <div className="flex items-center justify-center space-x-2 text-brand-blue font-black text-sm tracking-widest uppercase mb-4">
+              <Grid3X3 className="w-5 h-5" />
+              <span>Explore Departments</span>
             </div>
-            <button 
-              onClick={() => navigate('/products')}
-              className="bg-white hover:bg-brand-dark hover:text-white text-brand-dark border-2 border-gray-100 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center group shadow-sm hover:shadow-xl"
-            >
-              Shop All New
-              <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
-            </button>
+            <h2 className="text-5xl lg:text-7xl font-black text-gray-900 tracking-tight">Shop by <span className="text-gray-400 italic">Category</span></h2>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {arrivalsLoading ? (
-              [1, 2, 3, 4].map(i => (
-                <ProductSkeleton key={i} />
-              ))
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
+            {categories.length > 0 ? (
+              // Use dynamic categories if available, matched with icons
+              categories.slice(0, 6).map((cat) => {
+                const iconMatch = categoryHierarchy.find(h => 
+                  h.name.toLowerCase().includes(cat.name.toLowerCase()) || 
+                  cat.name.toLowerCase().includes(h.name.toLowerCase().split(' & ')[0])
+                );
+                const Icon = iconMatch?.icon || Grid3X3;
+                
+                return (
+                  <button
+                    key={cat.id}
+                    onClick={() => navigate(`/products?category=${cat.id}`)}
+                    className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/10 hover:-translate-y-2 border border-gray-100 hover:border-brand-blue/20"
+                  >
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-blue/10 transition-colors" />
+                    <div className="relative z-10 flex flex-col items-center text-center">
+                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                        <Icon className="w-8 h-8 text-brand-dark group-hover:text-brand-blue transition-colors" />
+                      </div>
+                      <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-tight">
+                        {decodeHtml(cat.name.split(' & ')[0])}
+                      </h3>
+                      <div className="mt-4 flex items-center text-[10px] font-bold text-brand-blue opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
+                        <span>BROWSE STORE</span>
+                        <ChevronRight className="ml-1 w-3 h-3" />
+                      </div>
+                    </div>
+                  </button>
+                );
+              })
             ) : (
-              newArrivals.map(product => (
-                <ProductCard key={product.id} product={product} />
+              // Fallback to hardcoded hierarchy if API fails or is empty
+              categoryHierarchy.slice(0, 6).map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => handleCategoryClick(cat.name)}
+                  className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/10 hover:-translate-y-2 border border-gray-100 hover:border-brand-blue/20"
+                >
+                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-blue/10 transition-colors" />
+                  <div className="relative z-10 flex flex-col items-center text-center">
+                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
+                      <cat.icon className="w-8 h-8 text-brand-dark group-hover:text-brand-blue transition-colors" />
+                    </div>
+                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-tight">
+                      {decodeHtml(cat.name.split(' & ')[0])}
+                    </h3>
+                    <div className="mt-4 flex items-center text-[10px] font-bold text-brand-blue opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
+                      <span>BROWSE STORE</span>
+                      <ChevronRight className="ml-1 w-3 h-3" />
+                    </div>
+                  </div>
+                </button>
               ))
             )}
           </div>
-
-          {error && (
-            <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 font-medium text-center">
-              {error}
-            </div>
-          )}
         </div>
       </section>
 
       {/* --- LIVE AUCTIONS SECTION --- */}
-      <section className="py-24 bg-gray-50/50 border-y border-gray-100">
+      <section className="py-16 lg:py-20 bg-gray-50/50 border-y border-gray-100">
         <div className="container mx-auto px-4 max-w-[1440px]">
           <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 gap-8 text-center md:text-left">
             <div className="max-w-2xl">
@@ -598,15 +665,58 @@ const Home: React.FC = () => {
         </div>
       </section>
 
+      {/* --- NEW ARRIVALS SECTION --- */}
+      <section className="py-16 lg:py-20 bg-white overflow-hidden">
+        <div className="container mx-auto px-4 max-w-[1440px]">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-8">
+            <div className="text-center md:text-left">
+              <div className="flex items-center justify-center md:justify-start space-x-2 text-brand-orange font-black text-sm tracking-widest uppercase mb-4">
+                <ShoppingBag className="w-5 h-5" />
+                <span>Warehouse Direct</span>
+              </div>
+              <h2 className="text-5xl lg:text-7xl font-black text-gray-900 tracking-tight">New in <span className="text-gray-400 italic">Store</span></h2>
+            </div>
+            <button 
+              onClick={() => navigate('/products')}
+              className="group flex items-center justify-center space-x-3 bg-brand-dark text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-blue transition-all duration-500 shadow-xl shadow-brand-dark/10"
+            >
+              <span>Explore All Products</span>
+              <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            {arrivalsLoading ? (
+              [1, 2, 3, 4].map(i => (
+                <ProductSkeleton key={i} />
+              ))
+            ) : (
+              newArrivals.map(product => (
+                <ProductCard key={product.id} product={product} />
+              ))
+            )}
+          </div>
+
+          {error && (
+            <div className="mt-8 p-4 bg-red-50 border border-red-100 rounded-2xl text-red-600 font-medium text-center">
+              {error}
+            </div>
+          )}
+        </div>
+      </section>
+
       {/* --- JUST FOR YOU SECTION --- */}
-      <section className="py-24 bg-gray-50/50">
+      <section className="py-16 lg:py-20 bg-gray-50/50">
         <div className="container mx-auto px-4 max-w-[1440px]">
           <div className="text-center mb-16">
-            <div className="flex items-center justify-center space-x-2 text-brand-orange font-black text-sm tracking-widest uppercase mb-4">
-              <Sparkles className="w-5 h-5" />
-              <span>Recommended Picks</span>
+            <div className="flex items-center justify-center space-x-2 text-brand-blue font-black text-sm tracking-widest uppercase mb-4">
+              <ShoppingBag className="w-5 h-5" />
+              <span>Personalized Selection</span>
             </div>
             <h2 className="text-5xl lg:text-7xl font-black text-gray-900 tracking-tight">Just For <span className="text-gray-400 italic">You</span></h2>
+            <p className="mt-6 text-gray-500 font-medium max-w-2xl mx-auto text-lg">
+              Curated warehouse-direct deals based on your browsing history. Premium quality, unbeatable store prices.
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -624,37 +734,116 @@ const Home: React.FC = () => {
       </section>
 
       {/* --- FEATURES SECTION --- */}
-      <section className="py-32">
+      <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4 max-w-[1440px]">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-            <div className="group p-12 rounded-[50px] bg-white border border-gray-100 hover:border-brand-blue transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/5">
-              <div className="w-20 h-20 bg-brand-blue/5 rounded-3xl flex items-center justify-center mb-10 group-hover:bg-brand-blue transition-colors">
-                <ShieldCheck className="w-10 h-10 text-brand-blue group-hover:text-white transition-colors" />
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+            <div className="group p-10 lg:p-12 rounded-[40px] lg:rounded-[50px] bg-gray-50/50 border border-gray-100 hover:border-brand-blue transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/5 text-center md:text-left">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-brand-blue/5 rounded-2xl lg:rounded-3xl flex items-center justify-center mb-8 lg:mb-10 group-hover:bg-brand-blue transition-colors mx-auto md:mx-0">
+                <ShieldCheck className="w-8 h-8 lg:w-10 lg:h-10 text-brand-blue group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-3xl font-black text-gray-900 mb-6 tracking-tight">Secure Bidding</h3>
-              <p className="text-xl text-gray-500 leading-relaxed font-medium">
-                Our advanced verification system ensures every bid is authentic and every winner is protected.
+              <h3 className="text-2xl lg:text-3xl font-black text-gray-900 mb-4 lg:mb-6 tracking-tight">Verified Quality</h3>
+              <p className="text-lg lg:text-xl text-gray-500 leading-relaxed font-medium">
+                Every item, from auctions to store direct, is verified for authenticity and quality.
               </p>
             </div>
             
-            <div className="group p-12 rounded-[50px] bg-white border border-gray-100 hover:border-brand-orange transition-all duration-500 hover:shadow-2xl hover:shadow-brand-orange/5">
-              <div className="w-20 h-20 bg-brand-orange/5 rounded-3xl flex items-center justify-center mb-10 group-hover:bg-brand-orange transition-colors">
-                <Trophy className="w-10 h-10 text-brand-orange group-hover:text-white transition-colors" />
+            <div className="group p-10 lg:p-12 rounded-[40px] lg:rounded-[50px] bg-gray-50/50 border border-gray-100 hover:border-brand-orange transition-all duration-500 hover:shadow-2xl hover:shadow-brand-orange/5 text-center md:text-left">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-brand-orange/5 rounded-2xl lg:rounded-3xl flex items-center justify-center mb-8 lg:mb-10 group-hover:bg-brand-orange transition-colors mx-auto md:mx-0">
+                <Truck className="w-8 h-8 lg:w-10 lg:h-10 text-brand-orange group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-3xl font-black text-gray-900 mb-6 tracking-tight">Fair Play Guarantee</h3>
-              <p className="text-xl text-gray-500 leading-relaxed font-medium">
-                Transparent auction logs and anti-sniper protection for a level playing field for everyone.
+              <h3 className="text-2xl lg:text-3xl font-black text-gray-900 mb-4 lg:mb-6 tracking-tight">Express Delivery</h3>
+              <p className="text-lg lg:text-xl text-gray-500 leading-relaxed font-medium">
+                Fast, nationwide shipping on all warehouse-direct products and auction wins.
               </p>
             </div>
 
-            <div className="group p-12 rounded-[50px] bg-white border border-gray-100 hover:border-green-600 transition-all duration-500 hover:shadow-2xl hover:shadow-green-50">
-              <div className="w-20 h-20 bg-green-50 rounded-3xl flex items-center justify-center mb-10 group-hover:bg-green-600 transition-colors">
-                <Zap className="w-10 h-10 text-green-600 group-hover:text-white transition-colors" />
+            <div className="group p-10 lg:p-12 rounded-[40px] lg:rounded-[50px] bg-gray-50/50 border border-gray-100 hover:border-green-600 transition-all duration-500 hover:shadow-2xl hover:shadow-green-50 text-center md:text-left">
+              <div className="w-16 h-16 lg:w-20 lg:h-20 bg-green-50 rounded-2xl lg:rounded-3xl flex items-center justify-center mb-8 lg:mb-10 group-hover:bg-green-600 transition-colors mx-auto md:mx-0">
+                <Zap className="w-8 h-8 lg:w-10 lg:h-10 text-green-600 group-hover:text-white transition-colors" />
               </div>
-              <h3 className="text-3xl font-black text-gray-900 mb-6 tracking-tight">Instant Payouts</h3>
-              <p className="text-xl text-gray-500 leading-relaxed font-medium">
-                Won an auction? Our streamlined checkout process gets your items moving in minutes.
+              <h3 className="text-2xl lg:text-3xl font-black text-gray-900 mb-4 lg:mb-6 tracking-tight">Direct Savings</h3>
+              <p className="text-lg lg:text-xl text-gray-500 leading-relaxed font-medium">
+                Skip the middleman and save up to 70% on premium warehouse clearance items.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- MOBILE APP SECTION --- */}
+      <section className="py-12 lg:py-16 bg-gray-50/50">
+        <div className="container mx-auto px-4 max-w-[1440px]">
+          <div className="bg-white rounded-[40px] lg:rounded-[60px] p-8 lg:p-16 border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-1/2 h-full bg-brand-blue/5 rounded-full blur-[120px] translate-x-1/4" />
+            
+            <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-20 relative z-10">
+              <div className="lg:w-1/2 text-center lg:text-left">
+                <div className="inline-flex items-center space-x-2 bg-brand-blue/10 text-brand-blue px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-widest mb-6">
+                  <Smartphone className="w-3 h-3" />
+                  <span>Shop on the Go</span>
+                </div>
+                <h2 className="text-4xl lg:text-6xl font-black text-gray-900 mb-6 tracking-tight leading-[1.1]">
+                  Download the <span className="text-brand-blue">BidsnBuy</span> App
+                  <span className="ml-4 inline-block bg-brand-orange text-white text-[10px] lg:text-xs px-3 py-1 rounded-full uppercase tracking-widest align-middle">Coming Soon</span>
+                </h2>
+                <p className="text-lg lg:text-xl text-gray-500 mb-10 font-medium leading-relaxed max-w-xl">
+                  Get real-time auction notifications, exclusive app-only deals, and track your orders seamlessly from your pocket.
+                </p>
+                <div className="flex flex-wrap justify-center lg:justify-start gap-4">
+                  <a href="#" className="hover:scale-105 transition-transform duration-300">
+                    <img src="https://bidsnbuy.ng/wp-content/uploads/2024/01/shop28-app-1.png" alt="App Store" className="h-12 lg:h-14 w-auto" />
+                  </a>
+                  <a href="#" className="hover:scale-105 transition-transform duration-300">
+                    <img src="https://bidsnbuy.ng/wp-content/uploads/2024/01/shop28-app-2.png" alt="Google Play" className="h-12 lg:h-14 w-auto" />
+                  </a>
+                </div>
+              </div>
+              <div className="lg:w-1/2 flex justify-center">
+                <div className="relative">
+                  <div className="absolute inset-0 bg-brand-blue/20 blur-[100px] rounded-full" />
+                  <img 
+                    src="https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?auto=format&fit=crop&q=80&w=800" 
+                    alt="App Preview" 
+                    className="relative z-10 w-full max-w-[300px] lg:max-w-[400px] rounded-[40px] shadow-2xl border-8 border-white"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* --- CTA SECTION --- */}
+      <section className="py-12 lg:py-16">
+        <div className="container mx-auto px-4 max-w-[1440px]">
+          <div className="relative rounded-[40px] lg:rounded-[60px] overflow-hidden bg-brand-dark px-8 py-12 lg:py-16 text-center">
+            {/* Background Effects */}
+            <div className="absolute top-0 left-0 w-full h-full">
+              <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-brand-blue/20 rounded-full blur-[120px] animate-pulse" />
+              <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[140%] bg-brand-orange/10 rounded-full blur-[120px]" />
+            </div>
+
+            <div className="relative z-10 max-w-3xl mx-auto">
+              <h2 className="text-4xl lg:text-6xl font-black text-white mb-6 tracking-tight leading-[1.1]">
+                Your Premium <span className="text-brand-blue italic">Shopping</span> & <span className="text-brand-orange">Auction</span> Hub
+              </h2>
+              <p className="text-lg lg:text-xl text-gray-400 mb-10 font-medium leading-relaxed">
+                Whether you're looking for an adrenaline-filled auction or a direct luxury purchase, BidsnBuy offers the best of both worlds.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button 
+                  onClick={() => navigate('/auctions')}
+                  className="w-full sm:w-auto bg-brand-blue text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-white hover:text-brand-dark transition-all duration-300 shadow-xl shadow-brand-blue/20"
+                >
+                  Enter Auction Floor
+                </button>
+                <button 
+                  onClick={() => navigate('/products')}
+                  className="w-full sm:w-auto bg-white/5 backdrop-blur-md border border-white/10 text-white px-10 py-4 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-white/10 transition-all duration-300"
+                >
+                  Browse Store
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -721,54 +910,13 @@ const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* --- CTA SECTION --- */}
-      <section className="py-20 md:py-32 text-center">
-        <div className="container mx-auto px-4 max-w-[1440px]">
-          <div className="max-w-5xl mx-auto bg-gradient-to-br from-brand-blue to-indigo-900 rounded-[40px] md:rounded-[80px] p-12 md:p-24 relative overflow-hidden shadow-2xl shadow-brand-blue/20">
-            {/* Decoration */}
-            <Hammer className="absolute -top-10 -left-10 w-48 md:w-64 h-48 md:h-64 text-white/10 -rotate-12" />
-            <div className="absolute top-0 right-0 w-64 md:w-96 h-64 md:h-96 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-            
-            <div className="relative z-10">
-              <h2 className="text-4xl md:text-6xl lg:text-8xl font-black text-white mb-6 md:mb-8 tracking-tighter leading-[1.1] md:leading-[0.9]">Ready to win your first auction?</h2>
-              <p className="text-white/70 text-lg md:text-2xl mb-8 md:mb-12 font-medium max-w-3xl mx-auto leading-relaxed">
-                Join thousands of happy bidders and start winning premium items at unbelievable prices today.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 md:gap-6 justify-center">
-                {user ? (
-                  <button 
-                    onClick={() => navigate('/auctions')}
-                    className="bg-white text-brand-blue px-10 md:px-16 py-4 md:py-6 rounded-2xl md:rounded-3xl text-lg md:text-2xl font-black hover:bg-brand-dark hover:text-white transition-all duration-500 shadow-2xl"
-                  >
-                    Go to Auctions
-                  </button>
-                ) : (
-                  <button 
-                    onClick={() => setIsAuthModalOpen(true)}
-                    className="bg-white text-brand-blue px-10 md:px-16 py-4 md:py-6 rounded-2xl md:rounded-3xl text-lg md:text-2xl font-black hover:bg-brand-dark hover:text-white transition-all duration-500 shadow-2xl"
-                  >
-                    Create Free Account
-                  </button>
-                )}
-                <button 
-                  onClick={() => navigate('/products')}
-                  className="bg-brand-orange text-white border-2 border-brand-orange/30 px-10 md:px-16 py-4 md:py-6 rounded-2xl md:rounded-3xl text-lg md:text-2xl font-black hover:bg-white hover:text-brand-dark transition-all duration-500"
-                >
-                  Explore Items
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* Auth Modal */}
       <AuthModal 
         isOpen={isAuthModalOpen} 
         onClose={() => setIsAuthModalOpen(false)} 
-        onSuccess={(userData: AuthResponse) => {
-          setUser(userData);
+        onSuccess={() => {
           setIsAuthModalOpen(false);
+          window.location.reload(); // Refresh to update header user state
         }}
       />
 

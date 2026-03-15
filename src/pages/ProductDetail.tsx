@@ -4,6 +4,7 @@ import { wpService } from '../services/wp-api';
 import { authService } from '../services/auth';
 import { useBreadcrumb } from '../context/BreadcrumbContext';
 import { useNotification } from '../context/NotificationContext';
+import { useCart } from '../context/CartContext';
 import AuthModal from '../components/AuthModal';
 import SEO from '../components/SEO';
 import ProductCard from '../components/ProductCard';
@@ -41,6 +42,7 @@ const ProductDetail: React.FC = () => {
   const navigate = useNavigate();
   const { setCustomTitle } = useBreadcrumb();
   const { showNotification } = useNotification();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<WPProduct | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -220,14 +222,18 @@ const ProductDetail: React.FC = () => {
   const handleAddToCart = (buyNow: boolean = false) => {
     if (!product) return;
     
-    // Redirect to WordPress cart/checkout
-    // buyNow=true uses the direct checkout parameter
-    const baseUrl = "https://bidsnbuy.ng/cart/";
-    const checkoutUrl = "https://bidsnbuy.ng/checkout/";
-    const targetUrl = buyNow ? checkoutUrl : baseUrl;
+    // Add to local cart
+    addToCart(product);
     
-    // Add item to cart via URL parameter (WooCommerce standard)
-    window.location.href = `${targetUrl}?add-to-cart=${product.id}`;
+    showNotification({
+      title: 'Added to Cart',
+      message: `${product.name} has been added to your cart.`,
+      type: 'success'
+    });
+
+    if (buyNow) {
+      navigate('/checkout');
+    }
   };
 
   if (loading) {

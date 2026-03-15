@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { wpService } from '../services/wp-api';
+import { decodeHtml } from '../utils/decode';
 import type { WPProduct } from '../types/wordpress';
 import ProductCard from '../components/ProductCard';
 import ProductSkeleton from '../components/ProductSkeleton';
@@ -35,7 +36,7 @@ const Auctions: React.FC = () => {
         const data = await wpService.getAuctions({ 
           per_page: 100,
           search: searchTerm,
-          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created'
+          _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
         setAuctions(data);
       } catch (err) {
@@ -276,10 +277,10 @@ const Auctions: React.FC = () => {
                       <div className="flex-grow space-y-4">
                         <div className="flex items-center space-x-2">
                           {product.categories.slice(0, 1).map(cat => (
-                            <span key={cat.id} className="text-[10px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/5 px-3 py-1 rounded-full">{cat.name}</span>
+                            <span key={cat.id} className="text-[10px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/5 px-3 py-1 rounded-full">{decodeHtml(cat.name)}</span>
                           ))}
                         </div>
-                        <h3 className="text-2xl font-black text-brand-dark group-hover:text-brand-blue transition-colors">{product.name}</h3>
+                        <h3 className="text-2xl font-black text-brand-dark group-hover:text-brand-blue transition-colors">{decodeHtml(product.name)}</h3>
                         <div className="flex flex-wrap gap-6 pt-2">
                           <div className="flex items-center space-x-2">
                             <Hammer className="w-4 h-4 text-brand-orange" />
