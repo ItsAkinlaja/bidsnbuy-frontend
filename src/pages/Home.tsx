@@ -750,7 +750,7 @@ const Home: React.FC = () => {
             </div>
             <button 
               onClick={() => navigate('/products')}
-              className="group flex items-center justify-center space-x-3 bg-brand-dark text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-blue transition-all duration-500 shadow-xl shadow-brand-dark/10"
+              className="group hidden md:flex items-center justify-center space-x-3 bg-brand-dark text-white px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-blue transition-all duration-500 shadow-xl shadow-brand-dark/10"
             >
               <span>Explore All Products</span>
               <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -767,6 +767,17 @@ const Home: React.FC = () => {
                 <ProductCard key={product.id} product={product} />
               ))
             )}
+          </div>
+
+          {/* Explore All Button for Mobile */}
+          <div className="mt-12 flex justify-center md:hidden">
+            <button 
+              onClick={() => navigate('/products')}
+              className="w-full bg-brand-dark text-white px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-[0.2em] hover:bg-brand-blue transition-all duration-500 flex items-center justify-center group shadow-xl active:scale-95"
+            >
+              <span>Explore All Products</span>
+              <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
 
           {error && (
@@ -938,7 +949,7 @@ const Home: React.FC = () => {
                 <span className="text-brand-orange">of Bidding.</span>
               </h2>
             </div>
-            <button className="bg-white text-brand-dark px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-brand-blue hover:text-white transition-all duration-500 flex items-center group shadow-2xl">
+            <button className="hidden md:flex bg-white text-brand-dark px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-brand-blue hover:text-white transition-all duration-500 items-center group shadow-2xl">
               Read All Stories
               <ChevronRight className="ml-2 md:ml-3 w-4 md:w-5 h-4 md:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -982,6 +993,14 @@ const Home: React.FC = () => {
                 </article>
               ))
             )}
+          </div>
+
+          {/* Read All Stories Button for Mobile */}
+          <div className="mt-12 flex justify-center md:hidden">
+            <button className="w-full bg-white text-brand-dark px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all duration-500 flex items-center justify-center group shadow-2xl active:scale-95">
+              Read All Stories
+              <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </section>
