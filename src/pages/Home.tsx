@@ -147,6 +147,30 @@ const categoryHierarchy = [
   }
 ];
 
+const AnimatedCounter: React.FC<{ target: number; duration?: number; prefix?: string; suffix?: string }> = ({ target, duration = 2000, prefix = '', suffix = '' }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let startTime: number | null = null;
+    let animationFrame: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      setCount(Math.floor(progress * target));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrame = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(animationFrame);
+  }, [target, duration]);
+
+  return <span>{prefix}{count.toLocaleString()}{suffix}</span>;
+};
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<WPPost[]>([]);
@@ -420,7 +444,7 @@ const Home: React.FC = () => {
                     <img 
                       src={slide.mobileBg} 
                       alt="" 
-                      className={`w-full h-full object-cover transition-transform duration-[5000ms] ease-out ${index === currentSlide ? 'scale-110' : 'scale-100'}`}
+                      className={`w-full h-full object-cover ${index === 0 ? 'object-top pb-24' : ''} transition-transform duration-[5000ms] ease-out ${index === currentSlide ? 'scale-[1.05]' : 'scale-100'}`}
                     />
                     {/* Premium Gradient Overlay for slides 2 & 3 */}
                     {index !== 0 && (
@@ -473,12 +497,16 @@ const Home: React.FC = () => {
 
                     <div className={`${index === 0 ? 'hidden lg:flex' : 'flex'} mt-10 sm:mt-12 items-center justify-center lg:justify-start space-x-8 sm:space-x-12 animate-in slide-in-from-bottom duration-700 delay-400`}>
                       <div className="flex flex-col items-center lg:items-start">
-                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">50K+</span>
+                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">
+                          <AnimatedCounter target={5} suffix="K+" />
+                        </span>
                         <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Happy Users</span>
                       </div>
                       <div className="w-px h-10 lg:h-8 bg-white/10 lg:bg-gray-100" />
                       <div className="flex flex-col items-center lg:items-start">
-                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">₦2.5B+</span>
+                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">
+                          <AnimatedCounter target={250} prefix="₦" suffix="M+" />
+                        </span>
                         <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Sales</span>
                       </div>
                     </div>

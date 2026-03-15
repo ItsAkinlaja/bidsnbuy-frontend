@@ -147,10 +147,19 @@ const App: React.FC = () => {
                       <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                       <p className="text-[10px] font-black uppercase tracking-widest text-white/60">© 2026 BidsnBuy.ng. All rights reserved.</p>
                     </div>
-                    <div className="flex items-center space-x-8 text-[10px] font-black uppercase tracking-widest text-white/60">
-                      <a href="#" className="hover:text-brand-orange transition-colors">Privacy Policy</a>
-                      <a href="#" className="hover:text-brand-orange transition-colors">Cookie Policy</a>
-                      <span className="hidden md:inline">Designed and developed by Avario Digitals</span>
+                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8 text-[10px] font-black uppercase tracking-widest text-white/60 text-center md:text-left">
+                      <div className="flex space-x-8">
+                        <a href="#" className="hover:text-brand-orange transition-colors">Privacy Policy</a>
+                        <a href="#" className="hover:text-brand-orange transition-colors">Cookie Policy</a>
+                      </div>
+                      <a 
+                        href="https://www.avariodigitals.com" 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="hover:text-brand-orange transition-all duration-300"
+                      >
+                        Designed and developed by Avario Digitals
+                      </a>
                     </div>
                   </div>
                 </div>
