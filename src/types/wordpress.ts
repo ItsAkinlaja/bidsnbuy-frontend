@@ -95,3 +95,55 @@ export interface WPCategory {
     alt: string;
   };
 }
+
+export interface WPCustomer {
+  id: number;
+  date_created: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  role: string;
+  username: string;
+  billing: {
+    first_name: string;
+    last_name: string;
+    company: string;
+    address_1: string;
+    address_2: string;
+    city: string;
+    postcode: string;
+    country: string;
+    state: string;
+    email: string;
+    phone: string;
+  };
+  shipping: {
+    first_name: string;
+    last_name: string;
+    company: string;
+    address_1: string;
+    address_2: string;
+    city: string;
+    postcode: string;
+    country: string;
+    state: string;
+  };
+  avatar_url: string;
+}
+
+export interface WPOrder {
+  id: number;
+  status: string;
+  currency: string;
+  date_created: string;
+  total: string;
+  customer_id: number;
+  line_items: Array<{
+    id: number;
+    name: string;
+    product_id: number;
+    variation_id: number;
+    quantity: number;
+    total: string;
+  }>;
+}

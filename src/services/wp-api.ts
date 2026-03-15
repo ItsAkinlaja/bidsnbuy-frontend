@@ -323,5 +323,44 @@ export const wpService = {
         throw new Error('Could not place bid. Please ensure the auction is active and your bid is higher than the current one.');
       }
     }
+  },
+
+  // --- CUSTOMER DASHBOARD API ---
+
+  // Get current customer details
+  async getCustomer() {
+    try {
+      // Since we're using JWT, we can't easily get the ID from the token without decoding
+      // But we can fetch /wc/v3/customers/me which uses the current authenticated session
+      const response = await wcApi.get('/wc/v3/customers/me');
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch customer:', error);
+      return null;
+    }
+  },
+
+  // Get customer orders
+  async getCustomerOrders(customerId: number) {
+    try {
+      const response = await wcApi.get('/wc/v3/orders', {
+        params: { customer: customerId }
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch customer orders:', error);
+      return [];
+    }
+  },
+
+  // Get customer downloads (for digital products if any)
+  async getCustomerDownloads(customerId: number) {
+    try {
+      const response = await wcApi.get(`/wc/v3/customers/${customerId}/downloads`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch customer downloads:', error);
+      return [];
+    }
   }
 };

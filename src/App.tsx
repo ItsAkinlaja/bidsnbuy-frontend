@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import Home from './pages/Home';
+import Dashboard from './pages/Dashboard';
 import Products from './pages/Products';
 import ProductDetail from './pages/ProductDetail';
 import Auctions from './pages/Auctions';
@@ -38,6 +39,7 @@ const App: React.FC = () => {
                 <Breadcrumbs />
                 <Routes>
                   <Route path="/" element={<Home />} />
+                  <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/buy-it-now" element={<Products />} />
                   <Route path="/products" element={<Products />} />
                   <Route path="/product/:slug" element={<ProductDetail />} />
