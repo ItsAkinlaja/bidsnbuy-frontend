@@ -697,7 +697,7 @@ const Home: React.FC = () => {
             </div>
             <button 
               onClick={() => navigate('/auctions')}
-              className="bg-white hover:bg-brand-dark hover:text-white text-brand-dark border-2 border-gray-100 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center group shadow-sm hover:shadow-xl"
+              className="hidden md:flex bg-white hover:bg-brand-dark hover:text-white text-brand-dark border-2 border-gray-100 px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 items-center group shadow-sm hover:shadow-xl"
             >
               View All Auctions
               <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -722,6 +722,17 @@ const Home: React.FC = () => {
                 <p className="text-gray-500 font-medium">Check back soon for new exciting auctions!</p>
               </div>
             )}
+          </div>
+
+          {/* View All Button for Mobile */}
+          <div className="mt-12 flex justify-center md:hidden">
+            <button 
+              onClick={() => navigate('/auctions')}
+              className="w-full bg-white hover:bg-brand-dark hover:text-white text-brand-dark border-2 border-gray-100 px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-widest transition-all duration-300 flex items-center justify-center group shadow-sm active:scale-95"
+            >
+              View All Auctions
+              <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </button>
           </div>
         </div>
       </section>

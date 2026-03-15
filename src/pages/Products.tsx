@@ -26,6 +26,9 @@ const Products: React.FC = () => {
   const [selectedCategory, setSelectedCategory] = useState<number | null>(
     searchParams.get('category') ? parseInt(searchParams.get('category')!) : null
   );
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   // Sync internal state with URL parameters (for external changes like Header search)
   useEffect(() => {
@@ -36,15 +39,18 @@ const Products: React.FC = () => {
     // This avoids resetting state while user is typing
     if (urlSearch !== searchTerm) {
       setSearchTerm(urlSearch);
+      setPage(1); // Reset page on search change
     }
     
     if (urlCat) {
       const catId = parseInt(urlCat);
       if (catId !== selectedCategory) {
         setSelectedCategory(catId);
+        setPage(1); // Reset page on category change
       }
     } else if (selectedCategory !== null && !searchParams.has('category')) {
       setSelectedCategory(null);
+      setPage(1); // Reset page on category clear
     }
     // We omit searchTerm and selectedCategory from deps to avoid sync loops
     // while user is typing. We use eslint-disable-next-line to acknowledge this.
@@ -66,9 +72,15 @@ const Products: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setLoading(true);
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+
         const params: Record<string, string | number> = { 
           per_page: 20,
+          page: page,
           orderby: sortBy,
           search: searchTerm
         };
@@ -76,17 +88,26 @@ const Products: React.FC = () => {
           params.category = selectedCategory;
         }
         const data = await wpService.getProducts(params);
-        setProducts(data);
+        
+        if (page === 1) {
+          setProducts(data);
+        } else {
+          setProducts(prev => [...prev, ...data]);
+        }
+
+        // If we got fewer products than requested, there are no more
+        setHasMore(data.length === 20);
       } catch (err) {
         console.error('Error fetching products:', err);
         setError('Failed to load products from the store.');
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
     fetchProducts();
-  }, [sortBy, searchTerm, selectedCategory]);
+  }, [sortBy, searchTerm, selectedCategory, page]);
 
   useEffect(() => {
     const newParams = new URLSearchParams();
@@ -94,6 +115,25 @@ const Products: React.FC = () => {
     if (selectedCategory) newParams.set('category', selectedCategory.toString());
     setSearchParams(newParams);
   }, [searchTerm, selectedCategory, setSearchParams]);
+
+  const handleSortChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSortBy(e.target.value);
+    setPage(1); // Reset page on sort change
+  };
+
+  const handleCategoryChange = (catId: number | null) => {
+    setSelectedCategory(catId);
+    setPage(1); // Reset page on category change
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1); // Reset page on search change
+  };
+
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
+  };
 
   const categoryTree = categories.filter(c => c.parent === 0).map(parent => ({
     ...parent,
@@ -173,7 +213,7 @@ const Products: React.FC = () => {
 
               <div className="space-y-6">
                 <button 
-                  onClick={() => setSelectedCategory(null)}
+                  onClick={() => handleCategoryChange(null)}
                   className={`w-full text-left text-sm font-black uppercase tracking-widest transition-colors ${!selectedCategory ? 'text-brand-blue' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   All Products
@@ -182,7 +222,7 @@ const Products: React.FC = () => {
                 {categoryTree.map((parent) => (
                   <div key={parent.id} className="space-y-3">
                     <button 
-                      onClick={() => setSelectedCategory(parent.id)}
+                      onClick={() => handleCategoryChange(parent.id)}
                       className={`w-full text-left text-sm font-black uppercase tracking-widest transition-colors flex items-center justify-between group ${selectedCategory === parent.id ? 'text-brand-blue' : 'text-gray-900 hover:text-brand-blue'}`}
                     >
                       <span>{decodeHtml(parent.name)}</span>
@@ -195,7 +235,7 @@ const Products: React.FC = () => {
                         {parent.children.map((child) => (
                           <button 
                             key={child.id}
-                            onClick={() => setSelectedCategory(child.id)}
+                            onClick={() => handleCategoryChange(child.id)}
                             className={`w-full text-left text-xs font-bold transition-colors block py-1 ${selectedCategory === child.id ? 'text-brand-orange' : 'text-gray-400 hover:text-brand-blue'}`}
                           >
                             {decodeHtml(child.name)}
@@ -231,7 +271,7 @@ const Products: React.FC = () => {
             {/* Toolbar */}
             <div className={`flex flex-col lg:flex-row gap-6 justify-between items-center mb-12 bg-white p-6 rounded-[30px] shadow-sm border border-gray-100 ${searchTerm ? 'ring-2 ring-brand-blue/20' : ''}`}>
               <div className="relative w-full lg:w-96">
-                {loading ? (
+                {loading && page === 1 ? (
                   <Loader2 className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-brand-blue animate-spin" />
                 ) : (
                   <Search className={`absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 ${searchTerm ? 'text-brand-blue' : 'text-gray-400'}`} />
@@ -241,7 +281,7 @@ const Products: React.FC = () => {
                   placeholder="Search items..." 
                   className={`w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-4 text-sm font-medium focus:ring-2 focus:ring-brand-blue transition-all ${searchTerm ? 'bg-brand-blue/5' : ''}`}
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                 />
               </div>
 
@@ -260,7 +300,7 @@ const Products: React.FC = () => {
                   <select 
                     className="w-full bg-gray-50 border-none rounded-2xl py-4 pl-12 pr-10 text-sm font-bold appearance-none cursor-pointer focus:ring-2 focus:ring-brand-blue"
                     value={sortBy}
-                    onChange={(e) => setSortBy(e.target.value)}
+                    onChange={handleSortChange}
                   >
                     <option value="date">Newest First</option>
                     <option value="price">Price: Low to High</option>
@@ -294,7 +334,7 @@ const Products: React.FC = () => {
                   ))}
                 </div>
                 
-                {products.length === 0 && (
+                {products.length === 0 && !loading && (
                   <div className="text-center py-32 bg-gray-50 rounded-[40px] border border-dashed border-gray-200">
                     <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                       <Search className="w-10 h-10 text-gray-300" />
@@ -304,10 +344,21 @@ const Products: React.FC = () => {
                   </div>
                 )}
                 
-                {products.length > 0 && (
+                {hasMore && products.length > 0 && (
                   <div className="mt-20 text-center">
-                    <button className="bg-white border-2 border-gray-100 text-gray-900 px-12 py-5 rounded-2xl font-black hover:border-brand-blue hover:text-brand-blue transition-all duration-300 shadow-sm">
-                      Load More Products
+                    <button 
+                      onClick={handleLoadMore}
+                      disabled={loadingMore}
+                      className="bg-white border-2 border-gray-100 text-gray-900 px-12 py-5 rounded-2xl font-black hover:border-brand-blue hover:text-brand-blue transition-all duration-300 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto space-x-3"
+                    >
+                      {loadingMore ? (
+                        <>
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                          <span>Loading...</span>
+                        </>
+                      ) : (
+                        <span>Load More Products</span>
+                      )}
                     </button>
                   </div>
                 )}

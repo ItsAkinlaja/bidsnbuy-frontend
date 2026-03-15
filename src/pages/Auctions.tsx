@@ -17,7 +17,8 @@ import {
   LayoutGrid,
   List,
   ChevronRight,
-  Filter
+  Filter,
+  Loader2
 } from 'lucide-react';
 
 const Auctions: React.FC = () => {
@@ -28,27 +29,53 @@ const Auctions: React.FC = () => {
   const [sortBy, setSortBy] = useState<'ending_soon' | 'newest' | 'price_asc' | 'price_desc'>('ending_soon');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeCategory, setActiveCategory] = useState<string>('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
 
   useEffect(() => {
     const fetchAuctions = async () => {
       try {
-        setLoading(true);
+        if (page === 1) {
+          setLoading(true);
+        } else {
+          setLoadingMore(true);
+        }
+
         const data = await wpService.getAuctions({ 
-          per_page: 100,
+          per_page: 20,
+          page: page,
           search: searchTerm,
           _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
-        setAuctions(data);
+
+        if (page === 1) {
+          setAuctions(data);
+        } else {
+          setAuctions(prev => [...prev, ...data]);
+        }
+
+        setHasMore(data.length === 20);
       } catch (err) {
         console.error('Error fetching auctions:', err);
         setError('Failed to load live auctions. Please try again later.');
       } finally {
         setLoading(false);
+        setLoadingMore(false);
       }
     };
 
     fetchAuctions();
-  }, [searchTerm]);
+  }, [searchTerm, page]);
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value);
+    setPage(1); // Reset page on search change
+  };
+
+  const handleLoadMore = () => {
+    setPage(prev => prev + 1);
+  };
 
   const categories = useMemo(() => {
     const cats = new Set<string>();
@@ -155,7 +182,7 @@ const Auctions: React.FC = () => {
                       placeholder="Search for lots by name or keyword..." 
                       className="w-full bg-white border border-gray-200 rounded-xl py-4 pl-12 pr-6 text-sm font-bold placeholder:text-gray-400 focus:border-brand-blue/30 focus:outline-none transition-all shadow-sm"
                       value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
+                      onChange={handleSearchChange}
                     />
                   </div>
 
@@ -306,7 +333,26 @@ const Auctions: React.FC = () => {
                 </div>
               )}
               
-              {filteredAndSortedAuctions.length === 0 && (
+              {hasMore && auctions.length > 0 && (
+                <div className="mt-20 text-center">
+                  <button 
+                    onClick={handleLoadMore}
+                    disabled={loadingMore}
+                    className="bg-white border-2 border-gray-100 text-brand-dark px-12 py-5 rounded-2xl font-black uppercase tracking-widest text-[11px] hover:border-brand-blue hover:text-brand-blue transition-all duration-300 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mx-auto space-x-3"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Synchronizing Floor...</span>
+                      </>
+                    ) : (
+                      <span>Load More Auctions</span>
+                    )}
+                  </button>
+                </div>
+              )}
+
+              {filteredAndSortedAuctions.length === 0 && !loading && (
                 <div className="text-center py-40 bg-white rounded-[60px] border border-dashed border-gray-100 shadow-sm max-w-4xl mx-auto">
                   <div className="w-32 h-32 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-10">
                     <Hammer className="w-12 h-12 text-gray-200" />

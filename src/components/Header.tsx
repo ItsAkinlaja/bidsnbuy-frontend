@@ -348,7 +348,7 @@ const Header: React.FC = () => {
               <img 
                 src="https://bidsnbuy.ng/wp-content/uploads/2024/01/cropped-Bidnbuylogo.jpg" 
                 alt="BidsnBuy Logo" 
-                className="h-10 lg:h-20 w-auto object-contain transition-transform group-hover:scale-105"
+                className="h-14 lg:h-20 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </Link>
 
