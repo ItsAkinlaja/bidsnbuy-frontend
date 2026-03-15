@@ -129,6 +129,11 @@ export interface WPCustomer {
     state: string;
   };
   avatar_url: string;
+  meta_data?: Array<{
+    id?: number;
+    key: string;
+    value: string | number | boolean | object | Array<unknown>;
+  }>;
 }
 
 export interface WPOrder {

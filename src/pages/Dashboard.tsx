@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { wpService } from '../services/wp-api';
 import { authService } from '../services/auth';
@@ -32,6 +32,8 @@ const Dashboard: React.FC = () => {
   const [customer, setCustomer] = useState<WPCustomer | null>(null);
   const [orders, setOrders] = useState<WPOrder[]>([]);
   const [error, setError] = useState<string | null>(null);
+  
+  const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const user = authService.getUser();
@@ -60,11 +62,24 @@ const Dashboard: React.FC = () => {
     fetchDashboardData();
   }, [navigate]);
 
+  const handleTabChange = (tab: 'overview' | 'orders' | 'auctions' | 'profile') => {
+    setActiveTab(tab);
+    // Auto-scroll to content section on mobile
+    if (window.innerWidth < 1024 && contentRef.current) {
+      const yOffset = -100; // Adjust for sticky header
+      const y = contentRef.current.getBoundingClientRect().top + window.pageYOffset + yOffset;
+      window.scrollTo({ top: y, behavior: 'smooth' });
+    }
+  };
+
   const handleLogout = () => {
     authService.logout();
     navigate('/');
     window.location.reload();
   };
+
+  // Calculate real stats from orders
+  const totalSpent = orders.reduce((sum, order) => sum + parseFloat(order.total), 0);
 
   if (isLoading) {
     return (
@@ -115,7 +130,7 @@ const Dashboard: React.FC = () => {
               <div className="flex flex-wrap justify-center md:justify-start gap-4 pt-4">
                 <div className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-2xl border border-white/10">
                   <Star className="w-4 h-4 text-brand-orange fill-brand-orange" />
-                  <span className="text-xs font-bold">120 Points</span>
+                  <span className="text-xs font-bold">{String(customer?.meta_data?.find(m => m.key === '_points_balance')?.value || 0)} Points</span>
                 </div>
                 <div className="flex items-center space-x-2 bg-white/5 backdrop-blur-sm px-4 py-2 rounded-2xl border border-white/10">
                   <ShieldCheck className="w-4 h-4 text-green-400" />
@@ -135,7 +150,7 @@ const Dashboard: React.FC = () => {
           <aside className="lg:w-1/4">
             <div className="bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 p-4 space-y-2">
               <button 
-                onClick={() => setActiveTab('overview')}
+                onClick={() => handleTabChange('overview')}
                 className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeTab === 'overview' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'hover:bg-gray-50 text-gray-500'}`}
               >
                 <div className="flex items-center space-x-4">
@@ -148,7 +163,7 @@ const Dashboard: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => setActiveTab('orders')}
+                onClick={() => handleTabChange('orders')}
                 className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeTab === 'orders' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'hover:bg-gray-50 text-gray-500'}`}
               >
                 <div className="flex items-center space-x-4">
@@ -161,7 +176,7 @@ const Dashboard: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => setActiveTab('auctions')}
+                onClick={() => handleTabChange('auctions')}
                 className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeTab === 'auctions' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'hover:bg-gray-50 text-gray-500'}`}
               >
                 <div className="flex items-center space-x-4">
@@ -174,7 +189,7 @@ const Dashboard: React.FC = () => {
               </button>
 
               <button 
-                onClick={() => setActiveTab('profile')}
+                onClick={() => handleTabChange('profile')}
                 className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeTab === 'profile' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'hover:bg-gray-50 text-gray-500'}`}
               >
                 <div className="flex items-center space-x-4">
@@ -219,7 +234,7 @@ const Dashboard: React.FC = () => {
           </aside>
 
           {/* Tab Content */}
-          <main className="lg:w-3/4 space-y-8">
+          <main className="lg:w-3/4 space-y-8" ref={contentRef}>
             {activeTab === 'overview' && (
               <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 {/* Stats Grid */}
@@ -238,7 +253,7 @@ const Dashboard: React.FC = () => {
                       <Hammer className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-2xl font-black text-gray-900">3</p>
+                      <p className="text-2xl font-black text-gray-900">{String(customer?.meta_data?.find(m => m.key === '_active_bids_count')?.value || 0)}</p>
                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Bids</p>
                     </div>
                   </div>
@@ -247,8 +262,8 @@ const Dashboard: React.FC = () => {
                       <TrendingUp className="w-6 h-6" />
                     </div>
                     <div>
-                      <p className="text-2xl font-black text-gray-900">₦25,400</p>
-                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Saved Amount</p>
+                      <p className="text-2xl font-black text-gray-900">₦{totalSpent.toLocaleString()}</p>
+                      <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Total Spent</p>
                     </div>
                   </div>
                 </div>
