@@ -32,30 +32,30 @@ export const authService = {
   },
 
   async register(email: string, username: string, password: string): Promise<AuthResponse> {
-    // Attempting to register via standard WP REST API or common registration plugin endpoint
-    // Many headless setups use /wp/v2/users/register
-    const response = await fetch(`${WP_BASE_URL}/wp/v2/users/register`, {
+    // Attempting to register via WooCommerce Customers endpoint
+    // This requires the consumer key and secret which are available in wp-api.ts
+    // For a production app, this should ideally be handled by a secure backend or specific registration plugin
+    const CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY;
+    const CONSUMER_SECRET = import.meta.env.VITE_WC_CONSUMER_SECRET;
+
+    const response = await fetch(`${WP_BASE_URL}/wc/v3/customers?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json', 
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ 
-        email, 
-        username, 
+      body: JSON.stringify({
+        email,
+        username,
         password,
-        // Standard WP fields
-        name: username,
-        first_name: username.split(' ')[0],
-        last_name: username.split(' ').slice(1).join(' ')
       }),
     });
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.message || 'Registration failed');
+      throw new Error(error.message || 'Registration failed. The username or email might already be in use.');
     }
 
-    // After successful registration, we automatically log the user in
+    // After successful registration, we automatically log the user in to get the JWT token
     return this.login(username, password);
   },
 

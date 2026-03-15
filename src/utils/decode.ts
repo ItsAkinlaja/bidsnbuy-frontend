@@ -3,7 +3,12 @@
  */
 export const decodeHtml = (html: string): string => {
   if (!html) return '';
-  const txt = document.createElement('textarea');
-  txt.innerHTML = html;
-  return txt.value;
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(html, 'text/html');
+    return doc.documentElement.textContent || '';
+  } catch (e) {
+    console.error('Error decoding HTML:', e);
+    return html;
+  }
 };

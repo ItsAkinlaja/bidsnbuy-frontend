@@ -171,6 +171,29 @@ const AnimatedCounter: React.FC<{ target: number; duration?: number; prefix?: st
   return <span>{prefix}{count.toLocaleString()}{suffix}</span>;
 };
 
+const BrandLogo: React.FC<{ brand: { name: string; logo: string } }> = ({ brand }) => {
+  const [error, setError] = useState(false);
+
+  if (error) {
+    return (
+      <div className="mx-10 lg:mx-16 flex-shrink-0">
+        <span className="text-xs font-black text-gray-400 uppercase tracking-widest">{brand.name}</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
+      <img 
+        src={brand.logo} 
+        alt={brand.name} 
+        className="h-6 lg:h-8 w-auto object-contain" 
+        onError={() => setError(true)}
+      />
+    </div>
+  );
+};
+
 const Home: React.FC = () => {
   const navigate = useNavigate();
   const [posts, setPosts] = useState<WPPost[]>([]);
@@ -452,7 +475,7 @@ const Home: React.FC = () => {
                     )}
                     {/* Mobile-only "Shop Now" banner for Slide 1 */}
                     {index === 0 && (
-                      <div className="absolute bottom-8 left-0 right-0 px-6 flex justify-center animate-in slide-in-from-bottom duration-1000 delay-500">
+                      <div className="absolute bottom-8 left-0 right-0 px-6 flex justify-center z-20">
                         <button 
                           onClick={() => navigate('/products')}
                           className="w-full max-w-xs bg-brand-blue text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-blue/30 flex items-center justify-center space-x-2 active:scale-95 transition-all"
@@ -468,18 +491,18 @@ const Home: React.FC = () => {
                   </div>
 
                   <div className="left-side lg:w-1/2 text-center lg:text-left pt-20 pb-12 px-6 lg:px-0 relative z-10 h-full flex flex-col justify-end lg:justify-center">
-                    <div className={`${index === 0 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black mb-4 sm:mb-6 animate-in slide-in-from-bottom duration-700 mx-auto lg:mx-0 w-fit backdrop-blur-md lg:backdrop-blur-none`}>
+                    <div className={`${index === 0 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black mb-4 sm:mb-6 mx-auto lg:mx-0 w-fit backdrop-blur-md lg:backdrop-blur-none`}>
                       <Zap className="w-3 h-3 fill-current" />
                       <span className="lg:text-inherit text-white uppercase tracking-widest">{slide.accentText}</span>
                     </div>
-                    <h1 className={`${index === 0 ? 'hidden lg:block' : 'block'} text-[42px] sm:text-5xl lg:text-6xl font-black text-white lg:text-gray-900 leading-[0.95] mb-4 sm:mb-6 tracking-tighter animate-in slide-in-from-bottom duration-700 delay-100 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] lg:drop-shadow-none`}>
+                    <h1 className={`${index === 0 ? 'hidden lg:block' : 'block'} text-[42px] sm:text-5xl lg:text-6xl font-black text-white lg:text-gray-900 leading-[0.95] mb-4 sm:mb-6 tracking-tighter drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] lg:drop-shadow-none`}>
                       {slide.title}
                     </h1>
-                    <p className={`${index === 0 ? 'hidden lg:block' : 'block'} text-base sm:text-lg lg:text-xl text-white lg:text-gray-600 mb-8 sm:mb-10 max-w-lg leading-relaxed font-black lg:font-medium mx-auto lg:mx-0 animate-in slide-in-from-bottom duration-700 delay-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] lg:drop-shadow-none`}>
+                    <p className={`${index === 0 ? 'hidden lg:block' : 'block'} text-base sm:text-lg lg:text-xl text-white lg:text-gray-600 mb-8 sm:mb-10 max-w-lg leading-relaxed font-black lg:font-medium mx-auto lg:mx-0 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] lg:drop-shadow-none`}>
                       {slide.description}
                     </p>
                     
-                    <div className={`${index === 0 ? 'hidden lg:flex' : 'flex'} flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-in slide-in-from-bottom duration-700 delay-300`}>
+                    <div className={`${index === 0 ? 'hidden lg:flex' : 'flex'} flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start`}>
                       <button 
                         onClick={() => navigate('/auctions')}
                         className="bg-brand-orange lg:bg-brand-dark text-white px-8 py-4 lg:py-4.5 rounded-2xl text-xs lg:text-sm font-black uppercase tracking-widest hover:bg-brand-blue transition-all duration-300 shadow-2xl shadow-brand-dark/40 flex items-center justify-center group active:scale-95"
@@ -577,41 +600,13 @@ const Home: React.FC = () => {
         <div className="flex overflow-hidden">
           <div className="flex animate-marquee whitespace-nowrap items-center py-4">
             {brands.map((brand, i) => (
-              <div key={i} className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
-                <img 
-                  src={brand.logo} 
-                  alt={brand.name} 
-                  className="h-6 lg:h-8 w-auto object-contain" 
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<span class="text-xs font-black text-gray-400 uppercase tracking-widest">${brand.name}</span>`;
-                    }
-                  }}
-                />
-              </div>
+              <BrandLogo key={`brand-1-${i}`} brand={brand} />
             ))}
           </div>
           {/* Duplicate for seamless loop */}
           <div className="flex animate-marquee whitespace-nowrap items-center py-4" aria-hidden="true">
             {brands.map((brand, i) => (
-              <div key={i} className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
-                <img 
-                  src={brand.logo} 
-                  alt={brand.name} 
-                  className="h-6 lg:h-8 w-auto object-contain" 
-                  onError={(e) => {
-                    const target = e.target as HTMLImageElement;
-                    target.style.display = 'none';
-                    const parent = target.parentElement;
-                    if (parent) {
-                      parent.innerHTML = `<span class="text-xs font-black text-gray-400 uppercase tracking-widest">${brand.name}</span>`;
-                    }
-                  }}
-                />
-              </div>
+              <BrandLogo key={`brand-2-${i}`} brand={brand} />
             ))}
           </div>
         </div>

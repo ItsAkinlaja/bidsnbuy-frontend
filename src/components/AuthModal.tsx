@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Mail, Lock, User, Loader2, Eye, EyeOff, Chrome } from 'lucide-react';
 import { authService, type AuthResponse } from '../services/auth';
 import { useNotification } from '../context/NotificationContext';
@@ -93,7 +94,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[1000] flex items-center justify-center p-0 sm:p-4 md:p-10 pointer-events-none">
       {/* Overlay */}
       <div 
@@ -213,6 +214,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
                         name="fullName"
                         placeholder="John Doe" 
                         required
+                        autoComplete="name"
                         value={formData.fullName}
                         onChange={handleChange}
                         className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-4.5 pl-14 pr-6 text-sm font-bold focus:bg-white focus:border-brand-blue focus:outline-none transition-all"
@@ -230,6 +232,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
                       name="username"
                       placeholder="you@example.com" 
                       required
+                      autoComplete="username email"
                       value={formData.username}
                       onChange={handleChange}
                       className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-4.5 pl-14 pr-6 text-sm font-bold focus:bg-white focus:border-brand-blue focus:outline-none transition-all"
@@ -253,6 +256,7 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
                       name="password"
                       placeholder="••••••••" 
                       required
+                      autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
                       value={formData.password}
                       onChange={handleChange}
                       className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-4.5 pl-14 pr-14 text-sm font-bold focus:bg-white focus:border-brand-blue focus:outline-none transition-all"
@@ -296,7 +300,8 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
