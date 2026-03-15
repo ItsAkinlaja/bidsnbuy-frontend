@@ -997,25 +997,25 @@ const Home: React.FC = () => {
       />
 
       {/* --- STICKY NAV CTA (MOBILE) --- */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 md:hidden w-full px-6 max-w-sm animate-fade-in">
+      <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 md:hidden w-full px-6 max-w-[320px] animate-fade-in">
         <button 
           onClick={() => navigate('/auctions')}
-          className="w-full bg-brand-dark/95 backdrop-blur-xl text-white px-8 py-4.5 rounded-[24px] font-black shadow-[0_20px_50px_-12px_rgba(30,92,234,0.3)] flex items-center justify-between group active:scale-95 transition-all border border-white/10"
+          className="w-full bg-brand-dark/95 backdrop-blur-xl text-white px-6 py-3.5 rounded-[20px] font-black shadow-[0_20px_50px_-12px_rgba(30,92,234,0.3)] flex items-center justify-between group active:scale-95 transition-all border border-white/10"
         >
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-3">
             <div className="relative">
               <div className="absolute inset-0 bg-brand-orange rounded-full animate-ping opacity-20" />
-              <div className="relative w-10 h-10 bg-brand-orange rounded-xl flex items-center justify-center shadow-lg shadow-brand-orange/20">
-                <Hammer className="w-5 h-5 text-white" />
+              <div className="relative w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center shadow-lg shadow-brand-orange/20">
+                <Hammer className="w-4 h-4 text-white" />
               </div>
             </div>
             <div className="flex flex-col items-start">
-              <span className="text-[10px] font-black text-brand-orange uppercase tracking-[0.2em] mb-0.5">Live Now</span>
-              <span className="text-sm font-black tracking-tight">Enter Auction Floor</span>
+              <span className="text-[9px] font-black text-brand-orange uppercase tracking-[0.2em] mb-0.5">Live Now</span>
+              <span className="text-xs font-black tracking-tight">Enter Auction Floor</span>
             </div>
           </div>
-          <div className="bg-white/10 p-2 rounded-xl group-hover:bg-brand-blue transition-colors">
-            <ChevronRight className="w-5 h-5" />
+          <div className="bg-white/10 p-1.5 rounded-lg group-hover:bg-brand-blue transition-colors">
+            <ChevronRight className="w-4 h-4" />
           </div>
         </button>
       </div>
