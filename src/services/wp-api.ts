@@ -362,5 +362,16 @@ export const wpService = {
       console.error('Failed to fetch customer downloads:', error);
       return [];
     }
+  },
+
+  // Get order by ID
+  async getOrderById(orderId: number) {
+    try {
+      const response = await wcApi.get(`/wc/v3/orders/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch order:', error);
+      return null;
+    }
   }
 };

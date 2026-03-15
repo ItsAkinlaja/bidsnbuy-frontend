@@ -143,6 +143,21 @@ export interface WPOrder {
   date_created: string;
   total: string;
   customer_id: number;
+  payment_method_title: string;
+  billing: {
+    first_name: string;
+    last_name: string;
+    email: string;
+    phone: string;
+  };
+  shipping: {
+    first_name: string;
+    last_name: string;
+    address_1: string;
+    city: string;
+    state: string;
+    country: string;
+  };
   line_items: Array<{
     id: number;
     name: string;

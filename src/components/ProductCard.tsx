@@ -16,15 +16,19 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
   const { showNotification } = useNotification();
 
   const [timeLeft, setTimeLeft] = useState<{
+    days: string;
     hours: string;
     mins: string;
     secs: string;
+    countdownStr: string;
     isEnded: boolean;
     isEndingSoon: boolean;
   }>({
-    hours: '00',
-    mins: '00',
-    secs: '00',
+    days: '0',
+    hours: '0',
+    mins: '0',
+    secs: '0',
+    countdownStr: '',
     isEnded: false,
     isEndingSoon: false
   });
@@ -33,13 +37,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
     if ((isAuction || product.is_auction)) {
       const updateTimer = () => {
         if (!product.auction_end_time) {
-          setTimeLeft({
-            hours: '00',
-            mins: '00',
-            secs: '00',
+          setTimeLeft(prev => ({
+            ...prev,
             isEnded: true,
             isEndingSoon: false
-          });
+          }));
           return true;
         }
 
@@ -56,9 +58,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
 
         if (isNaN(end) || diff <= 0) {
           setTimeLeft({
-            hours: '00',
-            mins: '00',
-            secs: '00',
+            days: '0',
+            hours: '0',
+            mins: '0',
+            secs: '0',
+            countdownStr: 'Closed',
             isEnded: true,
             isEndingSoon: false
           });
@@ -70,9 +74,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
           const secs = Math.floor((diff % (1000 * 60)) / 1000);
           
           setTimeLeft({
-            hours: (days * 24 + hours).toString().padStart(2, '0'),
-            mins: mins.toString().padStart(2, '0'),
-            secs: secs.toString().padStart(2, '0'),
+            days: days.toString(),
+            hours: hours.toString(),
+            mins: mins.toString(),
+            secs: secs.toString(),
+            countdownStr: `${days}d ${hours}h ${mins}m ${secs}s`,
             isEnded: false,
             isEndingSoon: diff < (1000 * 60 * 30) // Less than 30 mins
           });
@@ -197,12 +203,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
                   <p className="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-1">Current Bid</p>
                   <p className="text-2xl font-black text-brand-blue tracking-tighter">₦{currentBidFormatted}</p>
                </div>
-               <div className={`p-4 rounded-2xl border transition-colors ${timeLeft.isEndingSoon ? 'bg-brand-orange/5 border-brand-orange/10' : 'bg-gray-50 border-gray-100'}`}>
-                  <p className={`text-[10px] font-black uppercase tracking-widest mb-1 flex items-center ${timeLeft.isEndingSoon ? 'text-brand-orange' : 'text-gray-400'}`}>
+               <div className={`p-4 rounded-2xl border transition-colors ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'bg-brand-orange/5 border-brand-orange/10' : 'bg-gray-50 border-gray-100'}`}>
+                  <p className={`text-[10px] font-black uppercase tracking-widest mb-1 flex items-center ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-400'}`}>
                     <Clock className="w-3 h-3 mr-1" /> {timeLeft.isEnded ? 'Auction Ended' : 'Ends In'}
                   </p>
-                  <div className={`text-lg font-black tracking-tight tabular-nums ${timeLeft.isEndingSoon ? 'text-brand-orange' : 'text-gray-900'}`}>
-                    {timeLeft.isEnded ? '00:00:00' : `${timeLeft.hours}:${timeLeft.mins}:${timeLeft.secs}`}
+                  <div className={`text-lg font-black tracking-tight tabular-nums ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-900'}`}>
+                    {timeLeft.isEnded ? 'Closed' : timeLeft.countdownStr}
                   </div>
                </div>
             </div>
