@@ -100,7 +100,7 @@ const App: React.FC = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-black text-white uppercase tracking-widest text-[10px] mb-6">Platform</h4>
+                      <h4 className="font-black text-brand-orange uppercase tracking-widest text-[10px] mb-6">Platform</h4>
                       <ul className="space-y-3 font-bold text-xs text-white">
                         <li><Link to="/auctions" className="hover:text-brand-orange transition-colors">Live Auctions</Link></li>
                         <li><Link to="/page/how-it-works" className="hover:text-brand-orange transition-colors">How it Works</Link></li>
@@ -110,12 +110,12 @@ const App: React.FC = () => {
                     </div>
 
                     <div>
-                      <h4 className="font-black text-white uppercase tracking-widest text-[10px] mb-6">Support</h4>
+                      <h4 className="font-black text-brand-orange uppercase tracking-widest text-[10px] mb-6">Support</h4>
                       <ul className="space-y-3 font-bold text-xs text-white">
                         <li><Link to="/contact" className="hover:text-brand-orange transition-colors">Contact Us</Link></li>
                         <li><Link to="/faqs" className="hover:text-brand-orange transition-colors">Help & FAQ</Link></li>
                         <li><Link to="/track-order" className="hover:text-brand-orange transition-colors">Track Order</Link></li>
-                        <li><Link to="/page/terms" className="hover:text-brand-orange transition-colors">Terms of Service</Link></li>
+                        <li><Link to="/page/terms-and-conditions" className="hover:text-brand-orange transition-colors">Terms of Service</Link></li>
                       </ul>
                     </div>
 
