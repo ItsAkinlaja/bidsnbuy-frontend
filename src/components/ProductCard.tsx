@@ -130,6 +130,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
           src={imageUrl} 
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          onError={(e) => {
+            const target = e.target as HTMLImageElement;
+            target.src = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?auto=format&fit=crop&q=80&w=800'; // Stable fallback
+          }}
         />
         
         {/* Overlay Badges */}

@@ -210,7 +210,7 @@ const Home: React.FC = () => {
       ),
       description: "Nigeria's premier destination for both thrill-seekers and direct shoppers. Bid on high-end items or buy directly from our exclusive collection.",
       image: "https://bidsnbuy.ng/wp-content/uploads/2025/11/Untitled-design-8.png",
-      mobileBg: "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?auto=format&fit=crop&q=80&w=1000",
+      mobileBg: "https://bidsnbuy.ng/wp-content/uploads/2025/11/Untitled-design-8.png",
       accent: "bg-brand-blue/10 text-brand-blue",
       accentText: "NG'S #1 BID & BUY DESTINATION"
     },
@@ -245,16 +245,16 @@ const Home: React.FC = () => {
   ];
 
   const brands = [
-    { name: "Apple", logo: "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" },
-    { name: "Samsung", logo: "https://upload.wikimedia.org/wikipedia/commons/2/24/Samsung_Logo.svg" },
-    { name: "Tecno", logo: "https://upload.wikimedia.org/wikipedia/commons/b/b7/TECNO_Mobile_logo.svg" },
-    { name: "Infinix", logo: "https://upload.wikimedia.org/wikipedia/commons/a/a2/Infinix_Logo.svg" },
-    { name: "Syinix", logo: "https://syinix.com/wp-content/uploads/2021/06/syinix-logo.png" },
-    { name: "HP", logo: "https://upload.wikimedia.org/wikipedia/commons/a/ad/HP_logo_2012.svg" },
-    { name: "Dell", logo: "https://upload.wikimedia.org/wikipedia/commons/4/48/Dell_Logo.svg" },
-    { name: "Sony", logo: "https://upload.wikimedia.org/wikipedia/commons/c/ca/Sony_logo.svg" },
-    { name: "LG", logo: "https://upload.wikimedia.org/wikipedia/commons/b/bf/LG_logo_%282015%29.svg" },
-    { name: "Canon", logo: "https://upload.wikimedia.org/wikipedia/commons/b/bd/Canon_logo.svg" }
+    { name: "Apple", logo: "https://www.vectorlogo.zone/logos/apple/apple-ar21.svg" },
+    { name: "Samsung", logo: "https://www.vectorlogo.zone/logos/samsung/samsung-ar21.svg" },
+    { name: "Tecno", logo: "https://logos-download.com/wp-content/uploads/2016/10/Tecno_Mobile_logo.png" },
+    { name: "Infinix", logo: "https://logos-download.com/wp-content/uploads/2016/10/Infinix_logo.png" },
+    { name: "Syinix", logo: "https://logos-download.com/wp-content/uploads/2021/01/Syinix_Logo.png" },
+    { name: "HP", logo: "https://www.vectorlogo.zone/logos/hp/hp-2.svg" },
+    { name: "Dell", logo: "https://www.vectorlogo.zone/logos/dell/dell-ar21.svg" },
+    { name: "Sony", logo: "https://www.vectorlogo.zone/logos/sony/sony-ar21.svg" },
+    { name: "LG", logo: "https://www.vectorlogo.zone/logos/lg/lg-ar21.svg" },
+    { name: "Canon", logo: "https://www.vectorlogo.zone/logos/canon/canon-ar21.svg" }
   ];
 
   useEffect(() => {
@@ -367,7 +367,7 @@ const Home: React.FC = () => {
           <div className="relative mb-8">
             <div className="w-24 h-24 bg-brand-blue/5 rounded-[32px] flex items-center justify-center">
               <img 
-                src="https://bidsnbuy.ng/wp-content/uploads/2025/11/Bidnbuylogo-removebg-preview.png" 
+                src="https://bidsnbuy.ng/wp-content/uploads/2024/01/cropped-Bidnbuylogo.jpg" 
                 alt="Logo" 
                 className="h-14 w-auto object-contain animate-pulse"
               />
@@ -413,51 +413,65 @@ const Home: React.FC = () => {
               {slides.map((slide, index) => (
                 <div 
                   key={slide.id}
-                  className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-16 transition-all duration-1000 absolute inset-0 ${index === currentSlide ? 'opacity-100 translate-x-0 pointer-events-auto' : 'opacity-0 translate-x-20 pointer-events-none'}`}
-                  style={{ position: index === currentSlide ? 'relative' : 'absolute' }}
+                  className={`flex flex-col lg:flex-row items-center gap-12 lg:gap-16 transition-all duration-1000 absolute inset-0 ${index === currentSlide ? 'opacity-100 scale-100 z-20 pointer-events-auto' : 'opacity-0 scale-105 z-10 pointer-events-none'}`}
                 >
                   {/* Mobile Premium Visual (Improved) */}
-                  <div className="lg:hidden absolute inset-0 z-0">
+                  <div className="lg:hidden absolute inset-0 z-0 bg-white">
                     <img 
                       src={slide.mobileBg} 
                       alt="" 
-                      className="w-full h-full object-cover scale-105"
+                      className={`w-full h-full object-cover transition-transform duration-[5000ms] ease-out ${index === currentSlide ? 'scale-110' : 'scale-100'}`}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/70 via-brand-dark/30 to-brand-dark/95" />
+                    {/* Premium Gradient Overlay for slides 2 & 3 */}
+                    {index !== 0 && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                    )}
+                    {/* Mobile-only "Shop Now" banner for Slide 1 */}
+                    {index === 0 && (
+                      <div className="absolute bottom-8 left-0 right-0 px-6 flex justify-center animate-in slide-in-from-bottom duration-1000 delay-500">
+                        <button 
+                          onClick={() => navigate('/products')}
+                          className="w-full max-w-xs bg-brand-blue text-white py-4 rounded-2xl font-black text-xs uppercase tracking-[0.2em] shadow-2xl shadow-brand-blue/30 flex items-center justify-center space-x-2 active:scale-95 transition-all"
+                        >
+                          <span>Shop Now</span>
+                          <ArrowRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    )}
                     {/* Decorative Elements */}
-                    <div className="absolute top-20 right-[-10%] w-64 h-64 bg-brand-blue/20 rounded-full blur-3xl" />
-                    <div className="absolute bottom-20 left-[-10%] w-64 h-64 bg-brand-orange/10 rounded-full blur-3xl" />
+                    <div className="absolute top-20 right-[-10%] w-64 h-64 bg-brand-blue/5 rounded-full blur-3xl" />
+                    <div className="absolute bottom-20 left-[-10%] w-64 h-64 bg-brand-orange/5 rounded-full blur-3xl" />
                   </div>
 
                   <div className="left-side lg:w-1/2 text-center lg:text-left pt-20 pb-12 px-6 lg:px-0 relative z-10 h-full flex flex-col justify-end lg:justify-center">
-                    <div className={`inline-flex items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black mb-4 sm:mb-6 animate-in slide-in-from-bottom duration-700 mx-auto lg:mx-0 w-fit`}>
+                    <div className={`${index === 0 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black mb-4 sm:mb-6 animate-in slide-in-from-bottom duration-700 mx-auto lg:mx-0 w-fit backdrop-blur-md lg:backdrop-blur-none`}>
                       <Zap className="w-3 h-3 fill-current" />
                       <span className="lg:text-inherit text-white uppercase tracking-widest">{slide.accentText}</span>
                     </div>
-                    <h1 className="text-[42px] sm:text-5xl lg:text-6xl font-black text-white lg:text-gray-900 leading-[0.95] mb-4 sm:mb-6 tracking-tighter animate-in slide-in-from-bottom duration-700 delay-100 drop-shadow-lg lg:drop-shadow-none">
+                    <h1 className={`${index === 0 ? 'hidden lg:block' : 'block'} text-[42px] sm:text-5xl lg:text-6xl font-black text-white lg:text-gray-900 leading-[0.95] mb-4 sm:mb-6 tracking-tighter animate-in slide-in-from-bottom duration-700 delay-100 drop-shadow-[0_4px_12px_rgba(0,0,0,0.5)] lg:drop-shadow-none`}>
                       {slide.title}
                     </h1>
-                    <p className="text-base sm:text-lg lg:text-xl text-white lg:text-gray-600 mb-8 sm:mb-10 max-w-lg leading-relaxed font-black lg:font-medium mx-auto lg:mx-0 animate-in slide-in-from-bottom duration-700 delay-200 drop-shadow-lg lg:drop-shadow-none">
+                    <p className={`${index === 0 ? 'hidden lg:block' : 'block'} text-base sm:text-lg lg:text-xl text-white lg:text-gray-600 mb-8 sm:mb-10 max-w-lg leading-relaxed font-black lg:font-medium mx-auto lg:mx-0 animate-in slide-in-from-bottom duration-700 delay-200 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)] lg:drop-shadow-none`}>
                       {slide.description}
                     </p>
                     
-                    <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-in slide-in-from-bottom duration-700 delay-300">
+                    <div className={`${index === 0 ? 'hidden lg:flex' : 'flex'} flex-col sm:flex-row gap-3 sm:gap-4 justify-center lg:justify-start animate-in slide-in-from-bottom duration-700 delay-300`}>
                       <button 
                         onClick={() => navigate('/auctions')}
-                        className="bg-brand-orange lg:bg-brand-dark text-white px-8 py-4.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:bg-brand-blue transition-all duration-300 shadow-2xl shadow-brand-dark/40 flex items-center justify-center group active:scale-95"
+                        className="bg-brand-orange lg:bg-brand-dark text-white px-8 py-4 lg:py-4.5 rounded-2xl text-xs lg:text-sm font-black uppercase tracking-widest hover:bg-brand-blue transition-all duration-300 shadow-2xl shadow-brand-dark/40 flex items-center justify-center group active:scale-95"
                       >
                         Live Auctions
                         <ArrowRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </button>
                       <button 
                         onClick={() => navigate('/products')}
-                        className="bg-white/20 lg:bg-white backdrop-blur-2xl lg:backdrop-blur-none text-white lg:text-brand-dark border border-white/40 lg:border-gray-100 px-8 py-4.5 rounded-2xl text-sm font-black uppercase tracking-widest hover:border-brand-blue hover:text-brand-blue transition-all duration-300 flex items-center justify-center active:scale-95"
+                        className="bg-brand-blue/10 lg:bg-white backdrop-blur-2xl lg:backdrop-blur-none text-brand-blue lg:text-brand-dark border border-brand-blue/20 lg:border-gray-100 px-8 py-4 lg:py-4.5 rounded-2xl text-xs lg:text-sm font-black uppercase tracking-widest hover:border-brand-blue hover:text-brand-blue transition-all duration-300 flex items-center justify-center active:scale-95"
                       >
                         Shop Now
                       </button>
                     </div>
 
-                    <div className="mt-10 sm:mt-12 flex items-center justify-center lg:justify-start space-x-8 sm:space-x-12 animate-in slide-in-from-bottom duration-700 delay-400">
+                    <div className={`${index === 0 ? 'hidden lg:flex' : 'flex'} mt-10 sm:mt-12 items-center justify-center lg:justify-start space-x-8 sm:space-x-12 animate-in slide-in-from-bottom duration-700 delay-400`}>
                       <div className="flex flex-col items-center lg:items-start">
                         <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">50K+</span>
                         <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Happy Users</span>
@@ -536,7 +550,19 @@ const Home: React.FC = () => {
           <div className="flex animate-marquee whitespace-nowrap items-center py-4">
             {brands.map((brand, i) => (
               <div key={i} className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
-                <img src={brand.logo} alt={brand.name} className="h-6 lg:h-8 w-auto object-contain" />
+                <img 
+                  src={brand.logo} 
+                  alt={brand.name} 
+                  className="h-6 lg:h-8 w-auto object-contain" 
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `<span class="text-xs font-black text-gray-400 uppercase tracking-widest">${brand.name}</span>`;
+                    }
+                  }}
+                />
               </div>
             ))}
           </div>
@@ -544,7 +570,19 @@ const Home: React.FC = () => {
           <div className="flex animate-marquee whitespace-nowrap items-center py-4" aria-hidden="true">
             {brands.map((brand, i) => (
               <div key={i} className="mx-10 lg:mx-16 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all duration-500 flex-shrink-0">
-                <img src={brand.logo} alt={brand.name} className="h-6 lg:h-8 w-auto object-contain" />
+                <img 
+                  src={brand.logo} 
+                  alt={brand.name} 
+                  className="h-6 lg:h-8 w-auto object-contain" 
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    const parent = target.parentElement;
+                    if (parent) {
+                      parent.innerHTML = `<span class="text-xs font-black text-gray-400 uppercase tracking-widest">${brand.name}</span>`;
+                    }
+                  }}
+                />
               </div>
             ))}
           </div>
@@ -790,12 +828,12 @@ const Home: React.FC = () => {
                   Get real-time auction notifications, exclusive app-only deals, and track your orders seamlessly from your pocket.
                 </p>
                 <div className="flex flex-wrap justify-center lg:justify-start gap-4">
-                  <a href="#" className="hover:scale-105 transition-transform duration-300">
-                    <img src="https://bidsnbuy.ng/wp-content/uploads/2024/01/shop28-app-1.png" alt="App Store" className="h-12 lg:h-14 w-auto" />
-                  </a>
-                  <a href="#" className="hover:scale-105 transition-transform duration-300">
-                    <img src="https://bidsnbuy.ng/wp-content/uploads/2024/01/shop28-app-2.png" alt="Google Play" className="h-12 lg:h-14 w-auto" />
-                  </a>
+                  <div className="hover:scale-105 transition-transform duration-300 opacity-50 grayscale cursor-not-allowed">
+                    <img src="https://bidsnbuy.ng/wp-content/uploads/2024/01/shop28-app-1.png" alt="App Store" className="h-10 lg:h-12 w-auto" />
+                  </div>
+                  <div className="hover:scale-105 transition-transform duration-300 opacity-50 grayscale cursor-not-allowed">
+                    <img src="https://bidsnbuy.ng/wp-content/uploads/2024/01/shop28-app-2.png" alt="Google Play" className="h-10 lg:h-12 w-auto" />
+                  </div>
                 </div>
               </div>
               <div className="lg:w-1/2 flex justify-center">
@@ -890,6 +928,10 @@ const Home: React.FC = () => {
                       src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || "https://images.unsplash.com/photo-1491933382434-500287f9b54b?auto=format&fit=crop&q=80&w=800"} 
                       alt={post.title.rendered}
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "https://images.unsplash.com/photo-1491933382434-500287f9b54b?auto=format&fit=crop&q=80&w=800";
+                      }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-brand-dark via-transparent to-transparent opacity-80" />
                   </div>

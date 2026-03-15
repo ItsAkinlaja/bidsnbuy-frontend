@@ -297,7 +297,7 @@ const Header: React.FC = () => {
 
   return (
     <>
-      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'}`}>
+      <header className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-300 ${isVisible ? 'translate-y-0' : '-translate-y-full'} ${lastScrollY > 20 ? 'bg-white/95 backdrop-blur-xl shadow-xl shadow-gray-200/20' : 'bg-white'}`}>
         {/* Top Announcement Bar */}
         <div className="bg-gradient-to-r from-brand-dark via-brand-blue/90 to-brand-dark py-2.5 overflow-hidden border-b border-white/10 relative z-[101] shadow-sm">
           <div className="animate-marquee whitespace-nowrap flex items-center">
@@ -357,7 +357,7 @@ const Header: React.FC = () => {
               <img 
                 src="https://bidsnbuy.ng/wp-content/uploads/2024/01/cropped-Bidnbuylogo.jpg" 
                 alt="BidsnBuy Logo" 
-                className="h-16 lg:h-20 w-auto object-contain transition-transform group-hover:scale-105"
+                className="h-10 lg:h-20 w-auto object-contain transition-transform group-hover:scale-105"
               />
             </Link>
 

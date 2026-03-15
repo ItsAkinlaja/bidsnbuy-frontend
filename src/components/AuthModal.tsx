@@ -49,27 +49,41 @@ const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose, initialMode = 'l
 
     try {
       if (mode === 'login') {
-        const userData = await authService.login(formData.username || formData.email, formData.password);
+        // For login, we can use username or email as the 'username' field for JWT
+        const response = await authService.login(formData.username, formData.password);
+        showNotification({
+          title: 'Welcome Back!',
+          message: `Successfully logged in as ${response.user_display_name}`,
+          type: 'success'
+        });
         if (onSuccess) {
-          onSuccess(userData);
+          onSuccess(response);
         } else {
           window.location.reload();
         }
       } else {
+        // For registration, we use the fullName as username if username is empty, 
+        // but typically username is mapped to the email field in the UI
+        const registerUsername = formData.username.split('@')[0]; // Simple fallback for username
+        const response = await authService.register(
+          formData.username, // UI uses 'username' field for email
+          formData.fullName || registerUsername, 
+          formData.password
+        );
         showNotification({
-          title: 'Portal Redirection',
-          message: 'Registration is currently handled through our main portal. Please contact support if you need assistance.',
-          type: 'info'
+          title: 'Account Created!',
+          message: `Welcome to BidsnBuy, ${response.user_display_name}!`,
+          type: 'success'
         });
+        if (onSuccess) {
+          onSuccess(response);
+        } else {
+          window.location.reload();
+        }
       }
     } catch (err: unknown) {
-      console.error('Auth error:', err);
-      let errorMessage = 'Authentication failed. Please check your credentials.';
-      if (err && typeof err === 'object' && 'response' in err) {
-        const axiosError = err as { response: { data?: { message?: string } } };
-        errorMessage = axiosError.response.data?.message || errorMessage;
-      }
-      setError(errorMessage);
+      const error = err as Error;
+      setError(error.message || 'An unexpected error occurred');
     } finally {
       setLoading(false);
     }
