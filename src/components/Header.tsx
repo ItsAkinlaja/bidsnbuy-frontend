@@ -590,14 +590,20 @@ const Header: React.FC = () => {
 
             {/* Quick Info */}
             <div className="flex items-center space-x-6 text-gray-400 ml-auto">
-               <div className="flex items-center space-x-2 border-r border-gray-100 pr-6 group cursor-pointer hover:text-brand-blue transition-colors">
+               <button 
+                onClick={() => navigate(user ? '/dashboard?tab=support' : '/contact')}
+                className="flex items-center space-x-2 border-r border-gray-100 pr-6 group cursor-pointer hover:text-brand-blue transition-colors"
+               >
                   <HelpCircle className="w-4 h-4" />
                   <span className="text-[10px] font-bold uppercase tracking-widest">Support</span>
-               </div>
-               <div className="flex items-center space-x-2 group cursor-pointer hover:text-brand-blue transition-colors">
+               </button>
+               <button 
+                onClick={() => navigate(user ? '/dashboard?tab=overview' : '/recently-viewed')}
+                className="flex items-center space-x-2 group cursor-pointer hover:text-brand-blue transition-colors"
+               >
                   <History className="w-4 h-4" />
                   <span className="text-[10px] font-bold uppercase tracking-widest">Recent</span>
-               </div>
+               </button>
             </div>
           </div>
         </div>
@@ -767,10 +773,16 @@ const Header: React.FC = () => {
             {/* Bottom Footer */}
             <div className="p-6 border-t border-gray-100 bg-gray-50 mt-auto">
                <div className="flex items-center justify-between text-gray-400">
-                  <div className="flex items-center space-x-2 group cursor-pointer hover:text-brand-blue transition-colors">
+                  <button 
+                    onClick={() => {
+                      navigate(user ? '/dashboard?tab=support' : '/contact');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center space-x-2 group cursor-pointer hover:text-brand-blue transition-colors"
+                  >
                     <HelpCircle className="w-5 h-5" />
                     <span className="text-[10px] font-black uppercase tracking-widest">Support Center</span>
-                  </div>
+                  </button>
                   <span className="text-[10px] font-black uppercase tracking-widest">v1.2.4</span>
                </div>
             </div>

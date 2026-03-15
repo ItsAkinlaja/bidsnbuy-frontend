@@ -207,25 +207,17 @@ export const wpService = {
     }
   },
 
-  // Fetch products by IDs
+  // Get products by IDs
   async getProductsByIds(ids: number[]) {
-    if (!ids.length) return [];
     try {
-      const response = await wcApi.get<WPProduct[]>('/wc/v3/products', {
+      if (!ids.length) return [];
+      const response = await wcApi.get('/wc/v3/products', {
         params: { include: ids.join(',') }
       });
       return response.data.map(mapAuctionData);
     } catch (error) {
-      console.warn('V3 IDs fetch failed, trying Store API:', error);
-      try {
-        const response = await api.get<WPProduct[]>('/wc/store/v1/products', {
-          params: { include: ids.join(',') }
-        });
-        return response.data.map(mapAuctionData);
-      } catch (e) {
-        console.error('Failed to fetch products by IDs:', e);
-        return [];
-      }
+      console.error('Error fetching products by IDs:', error);
+      return [];
     }
   },
 

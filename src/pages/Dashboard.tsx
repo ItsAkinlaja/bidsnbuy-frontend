@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { wpService } from '../services/wp-api';
 import { authService } from '../services/auth';
-import type { WPCustomer, WPOrder } from '../types/wordpress';
+import type { WPCustomer, WPOrder, WPProduct } from '../types/wordpress';
 import LoadingBar from '../components/LoadingBar';
 import SEO from '../components/SEO';
 import { 
@@ -22,18 +22,38 @@ import {
   ShieldCheck,
   Star,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  History,
+  MessageSquare,
+  HelpCircle,
+  PhoneCall,
+  Truck
 } from 'lucide-react';
+
+type DashboardTab = 'overview' | 'orders' | 'auctions' | 'profile' | 'support';
 
 const Dashboard: React.FC = () => {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<'overview' | 'orders' | 'auctions' | 'profile'>('overview');
+  const location = useLocation();
+  const [activeTab, setActiveTab] = useState<DashboardTab>('overview');
   const [isLoading, setIsLoading] = useState(true);
   const [customer, setCustomer] = useState<WPCustomer | null>(null);
   const [orders, setOrders] = useState<WPOrder[]>([]);
+  const [recentlyViewed, setRecentlyViewed] = useState<WPProduct[]>([]);
   const [error, setError] = useState<string | null>(null);
   
   const contentRef = useRef<HTMLDivElement>(null);
+
+  // Sync tab with URL query parameter
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    const validTabs: DashboardTab[] = ['overview', 'orders', 'auctions', 'profile', 'support'];
+    
+    if (tab && validTabs.includes(tab as DashboardTab)) {
+      setActiveTab(tab as DashboardTab);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     const user = authService.getUser();
@@ -51,6 +71,13 @@ const Dashboard: React.FC = () => {
           const orderData = await wpService.getCustomerOrders(customerData.id);
           setOrders(orderData);
         }
+
+        // Fetch Recently Viewed from LocalStorage
+        const recentIds = JSON.parse(localStorage.getItem('recentlyViewed') || '[]');
+        if (recentIds.length > 0) {
+          const recentProducts = await wpService.getProductsByIds(recentIds.slice(0, 4));
+          setRecentlyViewed(recentProducts);
+        }
       } catch (err) {
         console.error('Dashboard fetch error:', err);
         setError('Failed to load dashboard data. Please try again.');
@@ -62,8 +89,13 @@ const Dashboard: React.FC = () => {
     fetchDashboardData();
   }, [navigate]);
 
-  const handleTabChange = (tab: 'overview' | 'orders' | 'auctions' | 'profile') => {
+  const handleTabChange = (tab: DashboardTab) => {
     setActiveTab(tab);
+    // Update URL without reloading
+    const params = new URLSearchParams(location.search);
+    params.set('tab', tab);
+    navigate({ search: params.toString() }, { replace: true });
+
     // Auto-scroll to content section on mobile
     if (window.innerWidth < 1024 && contentRef.current) {
       const yOffset = -100; // Adjust for sticky header
@@ -201,6 +233,19 @@ const Dashboard: React.FC = () => {
                 <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'profile' ? 'translate-x-1' : ''}`} />
               </button>
 
+              <button 
+                onClick={() => handleTabChange('support')}
+                className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeTab === 'support' ? 'bg-brand-blue text-white shadow-lg shadow-brand-blue/30' : 'hover:bg-gray-50 text-gray-500'}`}
+              >
+                <div className="flex items-center space-x-4">
+                  <div className={`p-2 rounded-xl ${activeTab === 'support' ? 'bg-white/20' : 'bg-gray-100 group-hover:bg-brand-blue/10'}`}>
+                    <Bell className="w-5 h-5" />
+                  </div>
+                  <span className="text-sm font-black uppercase tracking-widest">Support</span>
+                </div>
+                <ChevronRight className={`w-4 h-4 transition-transform ${activeTab === 'support' ? 'translate-x-1' : ''}`} />
+              </button>
+
               <div className="pt-4 mt-4 border-t border-gray-100">
                 <button 
                   onClick={handleLogout}
@@ -268,73 +313,98 @@ const Dashboard: React.FC = () => {
                   </div>
                 </div>
 
-                {/* Recent Orders Table */}
-                <div className="bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
-                  <div className="p-8 border-b border-gray-50 flex items-center justify-between">
-                    <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Recent Activity</h3>
-                    <button 
-                      onClick={() => setActiveTab('orders')}
-                      className="text-[10px] font-black text-brand-blue uppercase tracking-widest hover:text-brand-orange transition-colors"
-                    >
-                      View All
-                    </button>
-                  </div>
-                  <div className="overflow-x-auto">
-                    {orders.length > 0 ? (
-                      <table className="w-full text-left">
-                        <thead>
-                          <tr className="bg-gray-50/50">
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Order ID</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Total</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Date</th>
-                            <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Actions</th>
-                          </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50">
-                          {orders.slice(0, 5).map((order) => (
-                            <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
-                              <td className="px-8 py-6">
-                                <span className="text-sm font-black text-gray-900">#{order.id}</span>
-                              </td>
-                              <td className="px-8 py-6">
-                                <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest ${
-                                  order.status === 'completed' ? 'bg-green-100 text-green-600' : 
-                                  order.status === 'processing' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
-                                }`}>
-                                  {order.status}
-                                </span>
-                              </td>
-                              <td className="px-8 py-6">
-                                <span className="text-sm font-black text-gray-900">₦{parseFloat(order.total).toLocaleString()}</span>
-                              </td>
-                              <td className="px-8 py-6">
-                                <span className="text-xs font-bold text-gray-400">{new Date(order.date_created).toLocaleDateString()}</span>
-                              </td>
-                              <td className="px-8 py-6">
-                                <button className="text-[10px] font-black text-brand-blue uppercase tracking-widest hover:text-brand-orange transition-all flex items-center space-x-1 group-hover:translate-x-1">
-                                  <span>Details</span>
-                                  <ChevronRight className="w-3 h-3" />
-                                </button>
-                              </td>
+                {/* Recent Activity & Support Section */}
+                <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+                  {/* Activity Table */}
+                  <div className="xl:col-span-2 bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+                    <div className="p-8 border-b border-gray-50 flex items-center justify-between">
+                      <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight">Recent Activity</h3>
+                      <button 
+                        onClick={() => handleTabChange('orders')}
+                        className="text-[10px] font-black text-brand-blue uppercase tracking-widest hover:text-brand-orange transition-colors"
+                      >
+                        View All
+                      </button>
+                    </div>
+                    <div className="overflow-x-auto">
+                      {orders.length > 0 ? (
+                        <table className="w-full text-left">
+                          <thead>
+                            <tr className="bg-gray-50/50">
+                              <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Order</th>
+                              <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Status</th>
+                              <th className="px-8 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Amount</th>
                             </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    ) : (
-                      <div className="p-12 text-center">
-                        <div className="w-20 h-20 bg-gray-50 rounded-[30px] flex items-center justify-center mx-auto mb-6">
-                          <Package className="w-10 h-10 text-gray-200" />
+                          </thead>
+                          <tbody className="divide-y divide-gray-50">
+                            {orders.slice(0, 5).map((order) => (
+                              <tr key={order.id} className="hover:bg-gray-50/50 transition-colors group">
+                                <td className="px-8 py-6">
+                                  <span className="text-sm font-black text-gray-900">#{order.id}</span>
+                                </td>
+                                <td className="px-8 py-6">
+                                  <span className={`px-3 py-1 rounded-full text-[8px] font-black uppercase tracking-widest ${
+                                    order.status === 'completed' ? 'bg-green-100 text-green-600' : 
+                                    order.status === 'processing' ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+                                  }`}>
+                                    {order.status}
+                                  </span>
+                                </td>
+                                <td className="px-8 py-6">
+                                  <span className="text-sm font-black text-gray-900">₦{parseFloat(order.total).toLocaleString()}</span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      ) : (
+                        <div className="p-12 text-center">
+                          <div className="w-16 h-16 bg-gray-50 rounded-[24px] flex items-center justify-center mx-auto mb-4">
+                            <Package className="w-8 h-8 text-gray-200" />
+                          </div>
+                          <p className="text-gray-400 font-bold text-xs">No recent activity.</p>
                         </div>
-                        <p className="text-gray-400 font-bold text-sm mb-4">No orders found yet.</p>
-                        <button 
-                          onClick={() => navigate('/products')}
-                          className="bg-brand-blue text-white px-8 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-brand-blue/20"
-                        >
-                          Start Shopping
-                        </button>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Recently Viewed / Quick Support */}
+                  <div className="bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 p-8">
+                    <h3 className="text-lg font-black text-gray-900 uppercase tracking-tight mb-6">Recently Viewed</h3>
+                    {recentlyViewed.length > 0 ? (
+                      <div className="space-y-4">
+                        {recentlyViewed.map((product) => (
+                          <button 
+                            key={product.id}
+                            onClick={() => navigate(`/product/${product.slug}`)}
+                            className="flex items-center space-x-4 w-full group text-left"
+                          >
+                            <div className="w-12 h-12 bg-gray-50 rounded-xl overflow-hidden flex-shrink-0 border border-gray-100">
+                              <img src={product.images[0]?.src} alt={product.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                            </div>
+                            <div className="min-w-0">
+                              <p className="text-xs font-black text-gray-900 truncate uppercase tracking-tight">{product.name}</p>
+                              <p className="text-[10px] font-bold text-brand-blue uppercase tracking-widest">₦{parseFloat(product.price || '0').toLocaleString()}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <History className="w-8 h-8 text-gray-100 mx-auto mb-2" />
+                        <p className="text-[10px] font-black text-gray-300 uppercase tracking-widest">History is empty</p>
                       </div>
                     )}
+                    
+                    <div className="mt-8 pt-8 border-t border-gray-50">
+                      <button 
+                        onClick={() => handleTabChange('support')}
+                        className="w-full bg-brand-orange/10 text-brand-orange py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-brand-orange hover:text-white transition-all flex items-center justify-center space-x-2"
+                      >
+                        <Bell className="w-4 h-4" />
+                        <span>Get Quick Support</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
 
@@ -531,6 +601,63 @@ const Dashboard: React.FC = () => {
                      </div>
                   </div>
                </div>
+            )}
+
+            {activeTab === 'support' && (
+              <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 sm:p-12 text-center relative overflow-hidden">
+                  <div className="absolute top-0 right-0 w-64 h-64 bg-brand-blue/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+                  
+                  <div className="relative z-10">
+                    <div className="w-20 h-20 bg-brand-blue/10 rounded-[30px] flex items-center justify-center mx-auto mb-8">
+                      <HelpCircle className="w-10 h-10 text-brand-blue" />
+                    </div>
+                    <h2 className="text-4xl font-black text-gray-900 mb-4 tracking-tight">Need Support?</h2>
+                    <p className="text-gray-500 font-medium mb-10 max-w-md mx-auto">Our premium support team is available 24/7 to help you with any issues or inquiries.</p>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <button 
+                        onClick={() => navigate('/track-order')}
+                        className="p-8 bg-gray-50 rounded-[30px] hover:bg-brand-blue hover:text-white transition-all group border border-gray-100"
+                      >
+                        <Truck className="w-8 h-8 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-xs font-black uppercase tracking-widest">Track Order</h4>
+                      </button>
+                      <button 
+                        onClick={() => window.location.href = 'mailto:support@bidsnbuy.ng'}
+                        className="p-8 bg-gray-50 rounded-[30px] hover:bg-brand-orange hover:text-white transition-all group border border-gray-100"
+                      >
+                        <MessageSquare className="w-8 h-8 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-xs font-black uppercase tracking-widest">Email Us</h4>
+                      </button>
+                      <button 
+                        onClick={() => window.location.href = 'tel:+234800BIDS'}
+                        className="p-8 bg-gray-50 rounded-[30px] hover:bg-brand-dark hover:text-white transition-all group border border-gray-100"
+                      >
+                        <PhoneCall className="w-8 h-8 mx-auto mb-4 group-hover:scale-110 transition-transform" />
+                        <h4 className="text-xs font-black uppercase tracking-widest">Call Center</h4>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* FAQ Section in Support Tab */}
+                <div className="bg-white rounded-[32px] shadow-xl shadow-gray-200/50 border border-gray-100 p-8 sm:p-12">
+                  <h3 className="text-xl font-black text-gray-900 uppercase tracking-tight mb-8">Frequently Asked Questions</h3>
+                  <div className="space-y-4">
+                    {[
+                      { q: "How do I place a bid?", a: "Navigate to the auction product page and enter your bid in the bidding box." },
+                      { q: "What is the delivery timeline?", a: "Standard delivery takes 3-5 business days across Nigeria." },
+                      { q: "Are my payments secure?", a: "Yes, we use industry-standard encryption for all transactions." }
+                    ].map((faq, i) => (
+                      <div key={i} className="p-6 bg-gray-50 rounded-2xl border border-gray-100">
+                        <p className="text-sm font-black text-gray-900 mb-2">{faq.q}</p>
+                        <p className="text-xs text-gray-500 font-medium">{faq.a}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
             )}
           </main>
         </div>

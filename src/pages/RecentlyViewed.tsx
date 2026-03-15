@@ -16,7 +16,7 @@ const RecentlyViewed: React.FC = () => {
           setLoading(true);
           const data = await wpService.getProductsByIds(recentIds);
           // Sort products in the order they appear in recentIds (most recent first)
-          const sortedData = recentIds.map((id: number) => data.find(p => p.id === id)).filter(Boolean) as WPProduct[];
+          const sortedData = recentIds.map((id: number) => data.find((p: WPProduct) => p.id === id)).filter(Boolean) as WPProduct[];
           setProducts(sortedData);
         } catch (err) {
           console.error('Error fetching recent products:', err);
