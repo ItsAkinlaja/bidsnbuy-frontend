@@ -624,61 +624,50 @@ const Home: React.FC = () => {
           </div>
 
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 md:gap-6">
-            {categories.length > 0 ? (
-              // Use dynamic categories if available, matched with icons
-              categories.slice(0, 6).map((cat) => {
-                const iconMatch = categoryHierarchy.find(h => 
-                  h.name.toLowerCase().includes(cat.name.toLowerCase()) || 
-                  cat.name.toLowerCase().includes(h.name.toLowerCase().split(' & ')[0])
-                );
-                const Icon = iconMatch?.icon || Grid3X3;
-                
-                return (
-                  <button
-                    key={cat.id}
-                    onClick={() => navigate(`/products?category=${cat.id}`)}
-                    className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/10 hover:-translate-y-2 border border-gray-100 hover:border-brand-blue/20"
-                  >
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-blue/10 transition-colors" />
-                    <div className="relative z-10 flex flex-col items-center text-center">
-                      <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                        <Icon className="w-8 h-8 text-brand-dark group-hover:text-brand-blue transition-colors" />
-                      </div>
-                      <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-tight">
-                        {decodeHtml(cat.name.split(' & ')[0])}
-                      </h3>
-                      <div className="mt-4 flex items-center text-[10px] font-bold text-brand-blue opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-                        <span>BROWSE STORE</span>
-                        <ChevronRight className="ml-1 w-3 h-3" />
-                      </div>
-                    </div>
-                  </button>
-                );
-              })
-            ) : (
-              // Fallback to hardcoded hierarchy if API fails or is empty
-              categoryHierarchy.slice(0, 6).map((cat) => (
+            {categoryHierarchy.slice(0, 6).map((fallbackCat) => {
+              // Try to find a dynamic category that matches this fallback category
+              const dynamicCat = categories.find(c => 
+                c.name.toLowerCase().includes(fallbackCat.name.toLowerCase()) || 
+                fallbackCat.name.toLowerCase().includes(c.name.toLowerCase().split(' & ')[0])
+              );
+              
+              const catName = dynamicCat?.name || fallbackCat.name;
+              const Icon = fallbackCat.icon || Grid3X3;
+              
+              return (
                 <button
-                  key={cat.name}
-                  onClick={() => handleCategoryClick(cat.name)}
-                  className="group relative aspect-[4/5] rounded-[32px] overflow-hidden bg-gray-50 flex flex-col items-center justify-center p-6 transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/10 hover:-translate-y-2 border border-gray-100 hover:border-brand-blue/20"
+                  key={fallbackCat.name}
+                  onClick={() => dynamicCat ? navigate(`/products?category=${dynamicCat.id}`) : handleCategoryClick(fallbackCat.name)}
+                  className="group relative aspect-square rounded-[2.5rem] overflow-hidden bg-white flex flex-col items-center justify-center p-6 transition-all duration-700 hover:shadow-[0_32px_64px_-16px_rgba(30,92,234,0.12)] hover:-translate-y-3 border border-gray-100/80 hover:border-brand-blue/30"
                 >
-                  <div className="absolute top-0 right-0 w-32 h-32 bg-brand-blue/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-brand-blue/10 transition-colors" />
-                  <div className="relative z-10 flex flex-col items-center text-center">
-                    <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
-                      <cat.icon className="w-8 h-8 text-brand-dark group-hover:text-brand-blue transition-colors" />
+                  {/* Premium Background Glow */}
+                  <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-brand-blue/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                  <div className="absolute -top-12 -right-12 w-32 h-32 bg-brand-blue/5 rounded-full blur-3xl group-hover:bg-brand-blue/15 transition-all duration-700 group-hover:scale-150" />
+                  
+                  <div className="relative z-10 flex flex-col items-center text-center w-full">
+                    {/* Icon Container with Floating Effect */}
+                    <div className="w-20 h-20 bg-gray-50/80 rounded-[2rem] flex items-center justify-center shadow-[inset_0_2px_4px_rgba(0,0,0,0.02)] mb-6 group-hover:scale-110 group-hover:-rotate-3 group-hover:bg-white group-hover:shadow-xl group-hover:shadow-brand-blue/10 transition-all duration-700 ease-out-back">
+                      <Icon className="w-9 h-9 text-gray-700 group-hover:text-brand-blue transition-colors duration-500" />
                     </div>
-                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-tight">
-                      {decodeHtml(cat.name.split(' & ')[0])}
+
+                    {/* Category Name with Refined Typography */}
+                    <h3 className="text-[13px] font-black text-gray-800 uppercase tracking-[0.15em] leading-tight group-hover:text-brand-blue transition-colors duration-500">
+                      {decodeHtml(catName.split(' & ')[0])}
                     </h3>
-                    <div className="mt-4 flex items-center text-[10px] font-bold text-brand-blue opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-2 group-hover:translate-y-0">
-                      <span>BROWSE STORE</span>
-                      <ChevronRight className="ml-1 w-3 h-3" />
+
+                    {/* Subtle Subtitle or Count if needed, or just a cleaner Browse Store */}
+                    <div className="mt-4 flex items-center justify-center space-x-1.5 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-y-4 group-hover:translate-y-0">
+                      <span className="text-[9px] font-black text-brand-blue uppercase tracking-[0.2em]">Explore</span>
+                      <div className="w-4 h-0.5 bg-brand-blue/30 rounded-full" />
+                      <ChevronRight className="w-3 h-3 text-brand-blue" />
                     </div>
                   </div>
+
+                  {/* Glassmorphism Border Overlay on Hover */}
+                  <div className="absolute inset-0 border-2 border-transparent group-hover:border-brand-blue/5 rounded-[2.5rem] pointer-events-none transition-colors duration-700" />
                 </button>
-              ))
-            )}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -704,9 +693,9 @@ const Home: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {auctionsLoading ? (
-              [1, 2, 3, 4].map(i => (
+              [1, 2, 3].map(i => (
                 <ProductSkeleton key={i} isAuction={true} />
               ))
             ) : auctions.length > 0 ? (
