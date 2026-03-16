@@ -196,27 +196,26 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
         </Link>
 
         {isAuction || product.is_auction ? (
-          <div className="mt-auto space-y-4">
-            {/* Auction Info Grid */}
-            <div className="grid grid-cols-2 gap-3">
-               <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
+          <div className="mt-auto pt-4 border-t border-gray-100">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {/* Bid Info */}
+              <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
                   <p className="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-1">Current Bid</p>
                   <p className="text-2xl font-black text-brand-blue tracking-tighter">₦{currentBidFormatted}</p>
-               </div>
-               <div className={`p-4 rounded-2xl border transition-colors ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'bg-brand-orange/5 border-brand-orange/10' : 'bg-gray-50 border-gray-100'}`}>
+              </div>
+              {/* Timer */}
+              <div className={`p-4 rounded-2xl border transition-colors ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'bg-brand-orange/5 border-brand-orange/10' : 'bg-gray-50 border-gray-100'}`}>
                   <p className={`text-[10px] font-black uppercase tracking-widest mb-1 flex items-center ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-400'}`}>
                     <Clock className="w-3 h-3 mr-1" /> {timeLeft.isEnded ? 'Auction Ended' : 'Ends In'}
                   </p>
                   <div className={`text-lg font-black tracking-tight tabular-nums ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-900'}`}>
                     {timeLeft.isEnded ? 'Closed' : timeLeft.countdownStr}
                   </div>
-               </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
+              </div>
+              {/* Bid Button */}
               <Link 
                 to={`/product/${product.slug}`}
-                className={`w-full font-black py-4 rounded-2xl transition-all flex items-center justify-center space-x-2 shadow-lg active:scale-95 transform uppercase tracking-widest text-[9px] ${
+                className={`w-full font-black py-4 rounded-2xl transition-all flex items-center justify-center space-x-2 shadow-lg active:scale-95 transform uppercase tracking-widest text-xs ${ 
                   timeLeft.isEnded 
                   ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
                   : 'bg-brand-dark hover:bg-brand-blue text-white'
@@ -225,9 +224,10 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
                 <Hammer className="w-3.5 h-3.5" />
                 <span>{timeLeft.isEnded ? 'Closed' : 'Bid Now'}</span>
               </Link>
+              {/* Details Button */}
               <Link 
                 to={`/product/${product.slug}`}
-                className="w-full bg-gray-50 hover:bg-gray-100 text-brand-dark font-black py-4 rounded-2xl transition-all flex items-center justify-center space-x-2 uppercase tracking-widest text-[9px] border border-gray-100"
+                className="w-full bg-gray-50 hover:bg-gray-100 text-brand-dark font-black py-4 rounded-2xl transition-all flex items-center justify-center space-x-2 uppercase tracking-widest text-xs border border-gray-100"
               >
                 <span>Details</span>
                 <ChevronRight className="w-3.5 h-3.5" />

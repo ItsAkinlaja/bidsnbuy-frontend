@@ -18,6 +18,10 @@ const wcApi = axios.create({
   },
 });
 
+const authedWcApi = axios.create({
+  baseURL: WP_BASE_URL,
+});
+
 // Helper to map YITH Auction meta data to standard fields
 const mapAuctionData = (product: WPProduct): WPProduct => {
   if (!product) return product;
@@ -138,7 +142,7 @@ api.interceptors.request.use((config) => {
 });
 
 // Add Interceptor for JWT token to the WooCommerce api (for customer-specific actions)
-wcApi.interceptors.request.use((config) => {
+authedWcApi.interceptors.request.use((config) => {
   const token = authService.getToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -298,7 +302,7 @@ export const wpService = {
     try {
       // YITH WooCommerce Auctions typically requires a POST to a specific endpoint
       // or using the WooCommerce V3 products endpoint with custom data
-      const response = await wcApi.post(`/wc/v3/products/${productId}/bid`, {
+      const response = await authedWcApi.post(`/wc/v3/products/${productId}/bid`, {
         bid_amount: bidAmount
       });
       return response.data;
@@ -306,7 +310,7 @@ export const wpService = {
       console.error('Error placing bid:', error);
       // If V3 bid endpoint doesn't exist, try a custom YITH endpoint if you've set one up
       try {
-        const response = await api.post('/bidsnbuy/v1/place-bid', {
+        const response = await authedWcApi.post('/bidsnbuy/v1/place-bid', {
           product_id: productId,
           bid_amount: bidAmount
         });
@@ -324,7 +328,7 @@ export const wpService = {
     try {
       // Since we're using JWT, we can't easily get the ID from the token without decoding
       // But we can fetch /wc/v3/customers/me which uses the current authenticated session
-      const response = await wcApi.get('/wc/v3/customers/me');
+      const response = await authedWcApi.get('/wc/v3/customers/me');
       return response.data;
     } catch (error) {
       console.error('Failed to fetch customer:', error);
@@ -335,7 +339,7 @@ export const wpService = {
   // Get customer orders
   async getCustomerOrders(customerId: number) {
     try {
-      const response = await wcApi.get('/wc/v3/orders', {
+      const response = await authedWcApi.get('/wc/v3/orders', {
         params: { customer: customerId }
       });
       return response.data;
@@ -348,7 +352,7 @@ export const wpService = {
   // Get customer downloads (for digital products if any)
   async getCustomerDownloads(customerId: number) {
     try {
-      const response = await wcApi.get(`/wc/v3/customers/${customerId}/downloads`);
+      const response = await authedWcApi.get(`/wc/v3/customers/${customerId}/downloads`);
       return response.data;
     } catch (error) {
       console.error('Failed to fetch customer downloads:', error);

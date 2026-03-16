@@ -490,7 +490,7 @@ const Home: React.FC = () => {
                     <div className="absolute bottom-20 left-[-10%] w-64 h-64 bg-brand-orange/5 rounded-full blur-3xl" />
                   </div>
 
-                  <div className="left-side lg:w-1/2 text-center lg:text-left pt-20 pb-12 px-6 lg:px-0 relative z-10 h-full flex flex-col justify-end lg:justify-center">
+                  <div className="left-side lg:w-1/2 text-center lg:text-left pt-20 pb-12 px-6 md:px-12 lg:px-0 relative z-10 h-full flex flex-col justify-end lg:justify-center">
                     <div className={`${index === 0 ? 'hidden lg:inline-flex' : 'inline-flex'} items-center space-x-2 ${slide.accent} lg:bg-transparent px-4 py-1.5 rounded-full text-[10px] sm:text-xs font-black mb-4 sm:mb-6 mx-auto lg:mx-0 w-fit backdrop-blur-md lg:backdrop-blur-none`}>
                       <Zap className="w-3 h-3 fill-current" />
                       <span className="lg:text-inherit text-white uppercase tracking-widest">{slide.accentText}</span>
@@ -686,7 +686,7 @@ const Home: React.FC = () => {
       {/* --- LIVE AUCTIONS SECTION --- */}
       <section className="py-16 lg:py-20 bg-gray-50/50 border-y border-gray-100">
         <div className="container mx-auto px-4 max-w-[1440px]">
-          <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 gap-8 text-center md:text-left">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-16 gap-8 text-center md:text-left">
             <div className="max-w-2xl">
               <div className="flex items-center space-x-3 text-brand-blue font-black text-sm tracking-[0.3em] uppercase mb-4 justify-center md:justify-start">
                 <div className="w-10 h-px bg-brand-blue/30 hidden md:block" />
@@ -704,7 +704,7 @@ const Home: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {auctionsLoading ? (
               [1, 2, 3, 4].map(i => (
                 <ProductSkeleton key={i} isAuction={true} />
@@ -757,7 +757,7 @@ const Home: React.FC = () => {
             </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {arrivalsLoading ? (
               [1, 2, 3, 4].map(i => (
                 <ProductSkeleton key={i} />
@@ -802,7 +802,7 @@ const Home: React.FC = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-8">
             {dealsLoading ? (
               [1, 2, 3, 4].map(i => (
                 <ProductSkeleton key={i} />
@@ -819,7 +819,7 @@ const Home: React.FC = () => {
       {/* --- FEATURES SECTION --- */}
       <section className="py-16 lg:py-24 bg-white">
         <div className="container mx-auto px-4 max-w-[1440px]">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12 lg:gap-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12 lg:gap-16">
             <div className="group p-10 lg:p-12 rounded-[40px] lg:rounded-[50px] bg-gray-50/50 border border-gray-100 hover:border-brand-blue transition-all duration-500 hover:shadow-2xl hover:shadow-brand-blue/5 text-center md:text-left">
               <div className="w-16 h-16 lg:w-20 lg:h-20 bg-brand-blue/5 rounded-2xl lg:rounded-3xl flex items-center justify-center mb-8 lg:mb-10 group-hover:bg-brand-blue transition-colors mx-auto md:mx-0">
                 <ShieldCheck className="w-8 h-8 lg:w-10 lg:h-10 text-brand-blue group-hover:text-white transition-colors" />
