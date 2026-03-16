@@ -373,7 +373,7 @@ const Header: React.FC = () => {
                 onChange={(e) => setHeaderSearchTerm(e.target.value)}
                 disabled={isSearching}
                 placeholder={isSearching ? "Searching..." : "Search for auctions, products..."}
-                className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3.5 pl-14 pr-6 text-sm font-medium focus:bg-white focus:border-brand-blue focus:outline-none transition-all disabled:opacity-70"
+                className="w-full bg-gray-50 border-2 border-transparent rounded-2xl py-3.5 pl-14 pr-6 text-base font-medium focus:bg-white focus:border-brand-blue focus:outline-none transition-all disabled:opacity-70"
               />
               <button 
                 type="submit" 
@@ -467,7 +467,7 @@ const Header: React.FC = () => {
                   placeholder="Search BidsnBuy..." 
                   value={headerSearchTerm}
                   onChange={(e) => setHeaderSearchTerm(e.target.value)}
-                  className="w-full bg-gray-50 border-2 border-brand-blue rounded-xl py-3 pl-12 pr-4 text-sm font-medium focus:outline-none"
+                  className="w-full bg-gray-50 border-2 border-brand-blue rounded-xl py-3 pl-12 pr-4 text-base font-medium focus:outline-none"
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
                       handleSearchSubmit(headerSearchTerm);
