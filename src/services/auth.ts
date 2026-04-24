@@ -32,16 +32,16 @@ export const authService = {
   },
 
   async register(email: string, username: string, password: string): Promise<AuthResponse> {
-    // Attempting to register via WooCommerce Customers endpoint
-    // This requires the consumer key and secret which are available in wp-api.ts
-    // For a production app, this should ideally be handled by a secure backend or specific registration plugin
     const CONSUMER_KEY = import.meta.env.VITE_WC_CONSUMER_KEY;
     const CONSUMER_SECRET = import.meta.env.VITE_WC_CONSUMER_SECRET;
 
-    const response = await fetch(`${WP_BASE_URL}/wc/v3/customers?consumer_key=${CONSUMER_KEY}&consumer_secret=${CONSUMER_SECRET}`, {
+    const credentials = btoa(`${CONSUMER_KEY}:${CONSUMER_SECRET}`);
+
+    const response = await fetch(`${WP_BASE_URL}/wc/v3/customers`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
+        'Authorization': `Basic ${credentials}`,
       },
       body: JSON.stringify({
         email,

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { wpService } from '../services/wp-api';
 import type { WPPost } from '../types/wordpress';
 import { Loader2, ArrowRight, Calendar } from 'lucide-react';
@@ -75,12 +76,12 @@ const Blog: React.FC = () => {
                   </div>
                   
                   <Link to={`/blog/${post.slug}`}>
-                    <h2 className="text-3xl font-black text-gray-900 mb-6 group-hover:text-brand-blue transition-colors leading-tight" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+                    <h2 className="text-3xl font-black text-gray-900 mb-6 group-hover:text-brand-blue transition-colors leading-tight" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title.rendered) }} />
                   </Link>
                   
                   <div 
                     className="text-gray-500 font-medium leading-relaxed mb-8 line-clamp-3"
-                    dangerouslySetInnerHTML={{ __html: post.excerpt.rendered }}
+                    dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.excerpt.rendered) }}
                   />
                 </div>
 

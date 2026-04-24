@@ -92,7 +92,7 @@ const Checkout: React.FC = () => {
     // 2. Initialize payment with the gateway
     // 3. Handle callback/webhook
     
-    console.log(`Initializing ${method} payment for ₦${grandTotal}...`);
+    console.log(`Initializing payment for ₦${grandTotal.toLocaleString()}...`);
 
     // Simulate payment gateway delay
     setTimeout(() => {

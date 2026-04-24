@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { wpService } from '../services/wp-api';
 import { decodeHtml } from '../utils/decode';
 import type { WPProduct } from '../types/wordpress';
@@ -22,6 +23,7 @@ import {
 } from 'lucide-react';
 
 const Auctions: React.FC = () => {
+  const navigate = useNavigate();
   const [auctions, setAuctions] = useState<WPProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -321,7 +323,7 @@ const Auctions: React.FC = () => {
                       </div>
                       <div className="w-full md:w-auto flex flex-col gap-3">
                         <button 
-                          onClick={() => window.location.href = `/product/${product.slug}`}
+                          onClick={() => navigate(`/product/${product.slug}`)}
                           className="bg-brand-dark text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-[10px] hover:bg-brand-blue transition-all shadow-xl shadow-brand-dark/10 flex items-center justify-center space-x-2"
                         >
                           <span>Place Bid</span>

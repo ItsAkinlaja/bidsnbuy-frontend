@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { wpService } from '../services/wp-api';
 import { decodeHtml } from '../utils/decode';
 import type { WPPost, WPProduct, WPCategory } from '../types/wordpress';
@@ -974,7 +975,7 @@ const Home: React.FC = () => {
                     <span className="w-1 h-1 bg-white/20 rounded-full" />
                     <span className="text-white/40">5 Min Read</span>
                   </div>
-                  <h3 className="text-xl md:text-3xl font-black text-white mb-4 md:mb-6 group-hover:text-brand-orange transition-colors leading-tight" dangerouslySetInnerHTML={{ __html: post.title.rendered }} />
+                  <h3 className="text-xl md:text-3xl font-black text-white mb-4 md:mb-6 group-hover:text-brand-orange transition-colors leading-tight" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title.rendered) }} />
                   <div className="flex items-center text-white/40 font-bold text-sm md:text-base group-hover:text-white transition-colors">
                     <span>Continue Reading</span>
                     <ArrowRight className="ml-2 w-4 md:w-5 h-4 md:h-5 group-hover:translate-x-2 transition-transform" />
