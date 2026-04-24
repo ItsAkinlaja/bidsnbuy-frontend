@@ -797,10 +797,15 @@ const Home: React.FC = () => {
               [1, 2, 3, 4].map(i => (
                 <ProductSkeleton key={i} />
               ))
-            ) : (
+            ) : justForYou.length > 0 ? (
               justForYou.map(product => (
                 <ProductCard key={product.id} product={product} />
               ))
+            ) : (
+              <div className="col-span-full py-16 text-center bg-gray-50 rounded-[40px] border border-dashed border-gray-200">
+                <ShoppingBag className="w-10 h-10 text-gray-300 mx-auto mb-4" />
+                <p className="text-sm font-bold text-gray-400">No deals available right now. Check back soon.</p>
+              </div>
             )}
           </div>
         </div>
@@ -939,7 +944,8 @@ const Home: React.FC = () => {
                 <span className="text-brand-orange">of Bidding.</span>
               </h2>
             </div>
-            <button className="hidden md:flex bg-white text-brand-dark px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-brand-blue hover:text-white transition-all duration-500 items-center group shadow-2xl">
+            <button className="hidden md:flex bg-white text-brand-dark px-8 md:px-10 py-3 md:py-4 rounded-xl md:rounded-2xl font-black text-sm md:text-base hover:bg-brand-blue hover:text-white transition-all duration-500 items-center group shadow-2xl"
+              onClick={() => navigate('/blog')}>
               Read All Stories
               <ChevronRight className="ml-2 md:ml-3 w-4 md:w-5 h-4 md:h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -962,6 +968,7 @@ const Home: React.FC = () => {
                     <img 
                       src={post._embedded?.['wp:featuredmedia']?.[0]?.source_url || "https://images.unsplash.com/photo-1491933382434-500287f9b54b?auto=format&fit=crop&q=80&w=800"} 
                       alt={post.title.rendered}
+                      loading="lazy"
                       className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 opacity-80 group-hover:opacity-100"
                       onError={(e) => {
                         const target = e.target as HTMLImageElement;
@@ -987,7 +994,8 @@ const Home: React.FC = () => {
 
           {/* Read All Stories Button for Mobile */}
           <div className="mt-12 flex justify-center md:hidden">
-            <button className="w-full bg-white text-brand-dark px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all duration-500 flex items-center justify-center group shadow-2xl active:scale-95">
+            <button className="w-full bg-white text-brand-dark px-8 py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-brand-blue hover:text-white transition-all duration-500 flex items-center justify-center group shadow-2xl active:scale-95"
+              onClick={() => navigate('/blog')}>
               Read All Stories
               <ChevronRight className="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </button>

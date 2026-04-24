@@ -131,10 +131,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
       )}
 
       {/* Image Container */}
-      <Link to={`/product/${product.slug}`} className="relative aspect-[4/5] overflow-hidden bg-gray-50 block">
+      <Link to={`/product/${product.slug}`} className="relative aspect-square lg:aspect-[4/3] overflow-hidden bg-gray-50 block">
         <img 
           src={imageUrl} 
           alt={product.name}
+          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
           onError={(e) => {
             const target = e.target as HTMLImageElement;

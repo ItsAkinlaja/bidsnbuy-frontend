@@ -21,7 +21,6 @@ import {
   RotateCcw,
   ChevronLeft,
   ChevronRight,
-  Heart,
   Share2,
   Users,
   Trophy,
@@ -488,14 +487,15 @@ const ProductDetail: React.FC = () => {
 
             {/* Quick Actions */}
             <div className="flex gap-4 mb-10">
-              <button className="flex-1 bg-gray-50 text-gray-900 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 hover:bg-brand-blue hover:text-white transition-all">
-                <Heart className="w-5 h-5" />
-                <span>Wishlist</span>
-              </button>
-              <button className="flex-1 bg-gray-50 text-gray-900 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 hover:bg-brand-blue hover:text-white transition-all">
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`Check out ${decodeHtml(product.name)} on BidsnBuy: ${window.location.href}`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 bg-gray-50 text-gray-900 py-4 rounded-2xl font-bold flex items-center justify-center space-x-2 hover:bg-green-500 hover:text-white transition-all"
+              >
                 <Share2 className="w-5 h-5" />
                 <span>Share</span>
-              </button>
+              </a>
             </div>
           </div>
         </div>

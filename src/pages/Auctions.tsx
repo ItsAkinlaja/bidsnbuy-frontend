@@ -34,6 +34,12 @@ const Auctions: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState('');
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     const fetchAuctions = async () => {
@@ -47,7 +53,7 @@ const Auctions: React.FC = () => {
         const data = await wpService.getAuctions({ 
           per_page: 20,
           page: page,
-          search: searchTerm,
+          search: debouncedSearch,
           _fields: 'id,name,slug,price,regular_price,on_sale,images,categories,type,meta_data,date_created,yith_auction_to,yith_auction_from,current_bid,bid_count'
         });
 
@@ -68,7 +74,7 @@ const Auctions: React.FC = () => {
     };
 
     fetchAuctions();
-  }, [searchTerm, page]);
+  }, [debouncedSearch, page]);
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);

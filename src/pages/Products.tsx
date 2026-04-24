@@ -29,6 +29,12 @@ const Products: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
+  const [debouncedSearch, setDebouncedSearch] = useState(searchTerm);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm), 400);
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Sync internal state with URL parameters (for external changes like Header search)
   useEffect(() => {
@@ -82,7 +88,7 @@ const Products: React.FC = () => {
           per_page: 20,
           page: page,
           orderby: sortBy,
-          search: searchTerm
+          search: debouncedSearch
         };
         if (selectedCategory) {
           params.category = selectedCategory;
@@ -107,7 +113,7 @@ const Products: React.FC = () => {
     };
 
     fetchProducts();
-  }, [sortBy, searchTerm, selectedCategory, page]);
+  }, [sortBy, debouncedSearch, selectedCategory, page]);
 
   useEffect(() => {
     const newParams = new URLSearchParams();
