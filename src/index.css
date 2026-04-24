@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
+/* @theme is valid in Tailwind CSS v4 - suppress linter warning */
 @theme {
-  --font-sans: "Inter", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-heading: "Playfair Display", Georgia, serif;
   --color-brand-blue: #1E5CEA;
   --color-brand-orange: #F69A09;
   --color-brand-dark: #0f172a;
@@ -14,6 +16,19 @@
 @layer base {
   html {
     font-size: 16px; /* Optimized base font size */
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+
+  h1 {
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
 }
 
@@ -107,7 +122,7 @@
 }
 
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Plus Jakarta Sans", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;
