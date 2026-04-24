@@ -168,7 +168,7 @@ const AnnouncementItem: React.FC<{ text: string }> = ({ text }) => {
     <div className="flex items-center mx-16 group cursor-default">
       <div className="flex items-center space-x-3">
         <div className="p-1 bg-brand-orange/20 rounded-lg group-hover:scale-110 transition-transform duration-500">
-          <Truck className="w-3.5 h-3.5 text-brand-orange animate-pulse" />
+          <Truck className="w-3.5 h-3.5 text-brand-orange" />
         </div>
         <span className="text-white font-black text-[10px] uppercase tracking-[0.2em] group-hover:text-brand-orange transition-colors duration-300">
           {text}
@@ -580,10 +580,16 @@ const Header: React.FC = () => {
                 <Link 
                   key={idx}
                   to={item.path}
-                  className="px-4 py-2 text-[10px] font-black text-gray-500 hover:text-brand-blue uppercase tracking-[0.2em] transition-colors relative group"
+                  className={`px-4 py-2 text-[10px] font-black uppercase tracking-[0.2em] transition-colors relative group ${
+                    location.pathname === item.path
+                      ? 'text-brand-blue'
+                      : 'text-gray-500 hover:text-brand-blue'
+                  }`}
                 >
                   {decodeHtml(item.name)}
-                  <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-brand-orange scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                  <span className={`absolute bottom-0 left-4 right-4 h-0.5 bg-brand-blue rounded-full transition-transform origin-left ${
+                    location.pathname === item.path ? 'scale-x-100' : 'scale-x-0 group-hover:scale-x-100'
+                  }`} />
                 </Link>
               ))}
             </nav>

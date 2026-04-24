@@ -182,7 +182,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
             ))}
           </div>
           {isAuction && !timeLeft.isEnded && (
-            <div className="flex items-center text-brand-orange animate-pulse">
+            <div className="flex items-center text-brand-orange">
                <div className="w-1.5 h-1.5 rounded-full bg-brand-orange mr-2" />
                <span className="text-[10px] font-black uppercase tracking-tighter">Active Now</span>
             </div>
@@ -201,14 +201,14 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
               {/* Bid Info */}
               <div className="bg-brand-blue/5 p-4 rounded-2xl border border-brand-blue/10">
                   <p className="text-[10px] text-brand-blue font-black uppercase tracking-widest mb-1">Current Bid</p>
-                  <p className="text-2xl font-black text-brand-blue tracking-tighter">₦{currentBidFormatted}</p>
+                  <p className="text-2xl font-black text-brand-blue tracking-tighter font-accent">₦{currentBidFormatted}</p>
               </div>
               {/* Timer */}
               <div className={`p-4 rounded-2xl border transition-colors ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'bg-brand-orange/5 border-brand-orange/10' : 'bg-gray-50 border-gray-100'}`}>
                   <p className={`text-[10px] font-black uppercase tracking-widest mb-1 flex items-center ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-400'}`}>
                     <Clock className="w-3 h-3 mr-1" /> {timeLeft.isEnded ? 'Auction Ended' : 'Ends In'}
                   </p>
-                  <div className={`text-lg font-black tracking-tight tabular-nums ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-900'}`}>
+                  <div className={`text-lg font-black tracking-tight tabular-nums font-accent ${timeLeft.isEndingSoon && !timeLeft.isEnded ? 'text-brand-orange' : 'text-gray-900'}`}>
                     {timeLeft.isEnded ? 'Closed' : timeLeft.countdownStr}
                   </div>
               </div>
@@ -240,7 +240,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, isAuction }) => {
               {product.regular_price && product.regular_price !== product.price && (
                 <span className="text-xs text-gray-400 line-through font-bold">₦{parseFloat(product.regular_price).toLocaleString()}</span>
               )}
-              <span className="text-2xl font-black text-brand-dark tracking-tighter">₦{parseFloat(product.price || '0').toLocaleString()}</span>
+              <span className="text-2xl font-black text-brand-dark tracking-tighter font-accent">₦{parseFloat(product.price || '0').toLocaleString()}</span>
             </div>
             <button 
               onClick={handleAddToCart}

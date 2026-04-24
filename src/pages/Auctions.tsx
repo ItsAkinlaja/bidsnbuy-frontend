@@ -139,8 +139,7 @@ const Auctions: React.FC = () => {
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2 bg-brand-blue/5 text-brand-blue px-3 py-1 rounded-md border border-brand-blue/10">
                     <span className="relative flex h-2 w-2">
-                      <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-blue opacity-75"></span>
-                      <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-blue"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-blue"></span>
                     </span>
                     <span className="text-[10px] font-black tracking-widest uppercase">Live Floor</span>
                   </div>

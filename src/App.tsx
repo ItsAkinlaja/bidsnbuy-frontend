@@ -35,7 +35,7 @@ const App: React.FC = () => {
               <Header />
 
               {/* Main Content Area */}
-              <main id="main-content">
+              <main id="main-content" className="animate-fade-in">
                 <Breadcrumbs />
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -60,7 +60,7 @@ const App: React.FC = () => {
               <BackToTop />
 
               {/* Premium Footer */}
-              <footer className="bg-brand-blue pt-16 pb-32 md:pb-8 text-white">
+              <footer className="bg-brand-dark pt-16 pb-32 md:pb-8 text-white">
                 <div className="container mx-auto px-4 max-w-[1440px]">
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
                     <div className="space-y-4">
@@ -146,7 +146,6 @@ const App: React.FC = () => {
 
                   <div className="pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
                     <div className="flex items-center space-x-2">
-                      <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
                       <p className="text-[10px] font-black uppercase tracking-widest text-white/60">© 2026 BidsnBuy.ng. All rights reserved.</p>
                     </div>
                     <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-8 text-[10px] font-black uppercase tracking-widest text-white/60 text-center md:text-left">

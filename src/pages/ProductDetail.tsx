@@ -28,7 +28,7 @@ import {
   History,
   Info,
   Zap,
-  Sparkles
+  Tag
 } from 'lucide-react';
 
 const PRODUCT_TABS = [
@@ -631,7 +631,7 @@ const ProductDetail: React.FC = () => {
                         Delivery times vary by location: Lagos (1-2 days), Other States (3-5 days).
                       </p>
                       <div className="flex items-center space-x-2 text-[10px] font-black text-brand-blue uppercase tracking-widest bg-brand-blue/5 px-4 py-2 rounded-full w-fit">
-                        <div className="w-1.5 h-1.5 bg-brand-blue rounded-full animate-pulse" />
+                        <div className="w-1.5 h-1.5 bg-brand-blue rounded-full" />
                         <span>Real-time Tracking Included</span>
                       </div>
                     </div>
@@ -646,7 +646,7 @@ const ProductDetail: React.FC = () => {
                         please contact our support within 24 hours for a full refund or replacement.
                       </p>
                       <div className="flex items-center space-x-2 text-[10px] font-black text-green-600 uppercase tracking-widest bg-green-50 px-4 py-2 rounded-full w-fit">
-                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full animate-pulse" />
+                        <div className="w-1.5 h-1.5 bg-green-600 rounded-full" />
                         <span>Buyer Protection Guaranteed</span>
                       </div>
                     </div>
@@ -680,7 +680,7 @@ const ProductDetail: React.FC = () => {
             <div className="flex flex-col md:flex-row items-center md:items-end justify-between mb-16 gap-8 text-center md:text-left">
               <div className="max-w-2xl">
                 <div className="flex items-center space-x-3 text-brand-orange font-black text-sm tracking-[0.3em] uppercase mb-4 justify-center md:justify-start">
-                  <Sparkles className="w-5 h-5 text-brand-orange" />
+                  <Tag className="w-5 h-5 text-brand-orange" />
                   <span>Curated for you</span>
                 </div>
                 <h2 className="text-4xl lg:text-6xl font-black text-gray-900 tracking-tight">You may <span className="text-gray-400 italic">also like</span></h2>

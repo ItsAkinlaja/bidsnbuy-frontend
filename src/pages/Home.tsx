@@ -521,14 +521,14 @@ const Home: React.FC = () => {
 
                     <div className={`${index === 0 ? 'hidden lg:flex' : 'flex'} mt-10 sm:mt-12 items-center justify-center lg:justify-start space-x-8 sm:space-x-12 animate-in slide-in-from-bottom duration-700 delay-400`}>
                       <div className="flex flex-col items-center lg:items-start">
-                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">
+                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900 font-accent">
                           <AnimatedCounter target={5} suffix="K+" />
                         </span>
                         <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Happy Users</span>
                       </div>
                       <div className="w-px h-10 lg:h-8 bg-white/10 lg:bg-gray-100" />
                       <div className="flex flex-col items-center lg:items-start">
-                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900">
+                        <span className="text-2xl lg:text-xl font-black text-white lg:text-gray-900 font-accent">
                           <AnimatedCounter target={250} prefix="₦" suffix="M+" />
                         </span>
                         <span className="text-[8px] lg:text-xs text-white/50 lg:text-gray-500 font-black uppercase tracking-[0.2em]">Sales</span>
@@ -552,7 +552,7 @@ const Home: React.FC = () => {
                             </div>
                             <div>
                               <p className="text-xs text-gray-400 font-bold uppercase tracking-wider">Highest Bid</p>
-                              <p className="text-xl font-black text-gray-900">₦{highestBid.toLocaleString()}</p>
+                              <p className="text-xl font-black text-gray-900 font-accent">₦{highestBid.toLocaleString()}</p>
                             </div>
                           </div>
                         </div>
@@ -892,7 +892,7 @@ const Home: React.FC = () => {
           <div className="relative rounded-[40px] lg:rounded-[60px] overflow-hidden bg-brand-dark px-8 py-12 lg:py-16 text-center">
             {/* Background Effects */}
             <div className="absolute top-0 left-0 w-full h-full">
-              <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-brand-blue/20 rounded-full blur-[120px] animate-pulse" />
+              <div className="absolute top-[-20%] left-[-10%] w-[60%] h-[140%] bg-brand-blue/20 rounded-full blur-[120px]" />
               <div className="absolute bottom-[-20%] right-[-10%] w-[60%] h-[140%] bg-brand-orange/10 rounded-full blur-[120px]" />
             </div>
 
@@ -934,7 +934,7 @@ const Home: React.FC = () => {
                 <div className="w-6 md:w-10 h-px bg-brand-blue" />
                 <span>BidsnBuy Insider</span>
               </div>
-              <h2 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1] md:leading-[0.9]">
+              <h2 className="text-3xl md:text-5xl lg:text-6xl font-black tracking-tighter leading-[1.1] md:leading-[0.9] text-white">
                 Master the Art <br className="hidden md:block" />
                 <span className="text-brand-orange">of Bidding.</span>
               </h2>
@@ -972,7 +972,7 @@ const Home: React.FC = () => {
                   </div>
                   <div className="flex items-center space-x-3 md:space-x-4 mb-4 md:mb-6 text-brand-blue font-black text-[10px] md:text-xs uppercase tracking-[0.2em]">
                     <span className="bg-brand-blue/10 px-2.5 md:px-3 py-1 rounded-md md:rounded-lg">Auction Guide</span>
-                    <span className="w-1 h-1 bg-white/20 rounded-full" />
+                    <span className="text-white/20">·</span>
                     <span className="text-white/40">5 Min Read</span>
                   </div>
                   <h3 className="text-xl md:text-3xl font-black text-white mb-4 md:mb-6 group-hover:text-brand-orange transition-colors leading-tight" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.title.rendered) }} />
@@ -1012,12 +1012,9 @@ const Home: React.FC = () => {
           className="w-full bg-brand-dark/95 backdrop-blur-xl text-white px-6 py-3.5 rounded-[20px] font-black shadow-[0_20px_50px_-12px_rgba(30,92,234,0.3)] flex items-center justify-between group active:scale-95 transition-all border border-white/10"
         >
           <div className="flex items-center space-x-3">
-            <div className="relative">
-              <div className="absolute inset-0 bg-brand-orange rounded-full animate-ping opacity-20" />
-              <div className="relative w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center shadow-lg shadow-brand-orange/20">
+            <div className="w-8 h-8 bg-brand-orange rounded-lg flex items-center justify-center shadow-lg shadow-brand-orange/20">
                 <Hammer className="w-4 h-4 text-white" />
               </div>
-            </div>
             <div className="flex flex-col items-start">
               <span className="text-[9px] font-black text-brand-orange uppercase tracking-[0.2em] mb-0.5">Live Now</span>
               <span className="text-xs font-black tracking-tight">Enter Auction Floor</span>

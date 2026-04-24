@@ -2,8 +2,9 @@
 
 /* @theme is valid in Tailwind CSS v4 - suppress linter warning */
 @theme {
-  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
-  --font-heading: "Playfair Display", Georgia, serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-heading: "Outfit", system-ui, sans-serif;
+  --font-accent: "Space Grotesk", system-ui, sans-serif;
   --color-brand-blue: #1E5CEA;
   --color-brand-orange: #F69A09;
   --color-brand-dark: #0f172a;
@@ -15,20 +16,47 @@
 
 @layer base {
   html {
-    font-size: 16px; /* Optimized base font size */
+    font-size: 16px;
+  }
+
+  body {
+    font-family: "Inter", system-ui, sans-serif;
+    font-weight: 400;
+    color: #0f172a;
+  }
+
+  p {
+    font-weight: 400;
+    line-height: 1.7;
+    color: #475569;
   }
 
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
-    font-weight: 600;
+    font-family: "Outfit", system-ui, sans-serif;
+    font-weight: 700;
     letter-spacing: -0.02em;
+    color: #0f172a;
   }
 
   h1 {
-    font-weight: 700;
+    font-weight: 900;
     letter-spacing: -0.03em;
+    line-height: 1.05;
+  }
+
+  h2 {
+    font-weight: 800;
+    letter-spacing: -0.025em;
     line-height: 1.1;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  h3 {
+    font-weight: 700;
+    line-height: 1.2;
+  }
+
+  .font-accent {
+    font-family: "Space Grotesk", system-ui, sans-serif;
   }
 }
 
@@ -36,6 +64,11 @@
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
 }
 
 @keyframes float {
@@ -122,7 +155,7 @@
 }
 
 :root {
-  font-family: "Plus Jakarta Sans", system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   color-scheme: light;

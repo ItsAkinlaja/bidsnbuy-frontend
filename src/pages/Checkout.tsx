@@ -205,7 +205,7 @@ const Checkout: React.FC = () => {
                     
                     <div className="flex-grow text-center sm:text-left w-full">
                       <h3 className="text-lg sm:text-xl font-black text-gray-900 mb-1 sm:mb-2 line-clamp-1">{decodeHtml(item.product.name)}</h3>
-                      <p className="text-brand-blue font-black text-base sm:text-lg mb-3 sm:mb-4">₦{parseFloat(item.product.price || '0').toLocaleString()}</p>
+                      <p className="text-brand-blue font-black text-base sm:text-lg mb-3 sm:mb-4 font-accent">₦{parseFloat(item.product.price || '0').toLocaleString()}</p>
                       
                       <div className="flex items-center justify-between sm:justify-start space-x-4">
                         <div className="flex items-center bg-gray-50 rounded-xl p-1 border border-gray-100">
@@ -240,7 +240,7 @@ const Checkout: React.FC = () => {
 
                     <div className="hidden sm:block text-right">
                       <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Subtotal</p>
-                      <p className="text-xl font-black text-gray-900">
+                      <p className="text-xl font-black text-gray-900 font-accent">
                         ₦{(parseFloat(item.product.price || '0') * item.quantity).toLocaleString()}
                       </p>
                     </div>
@@ -464,16 +464,16 @@ const Checkout: React.FC = () => {
                 <div className="space-y-3 sm:space-y-4 mb-6 sm:mb-8">
                   <div className="flex justify-between text-gray-500 font-bold text-[8px] sm:text-[10px] uppercase tracking-widest">
                     <span>Subtotal</span>
-                    <span className="text-gray-900 text-sm">₦{cartTotal.toLocaleString()}</span>
+                    <span className="text-gray-900 text-sm font-accent">₦{cartTotal.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-gray-500 font-bold text-[8px] sm:text-[10px] uppercase tracking-widest">
                     <span>Shipping ({shippingMethod})</span>
-                    <span className="text-gray-900 text-sm">₦{shippingCost.toLocaleString()}</span>
+                    <span className="text-gray-900 text-sm font-accent">₦{shippingCost.toLocaleString()}</span>
                   </div>
                   <div className="pt-4 sm:pt-6 border-t border-gray-100 flex justify-between items-end">
                     <div>
                       <p className="text-[8px] sm:text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Grand Total</p>
-                      <p className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tighter">₦{grandTotal.toLocaleString()}</p>
+                      <p className="text-2xl sm:text-3xl font-black text-brand-blue tracking-tighter font-accent">₦{grandTotal.toLocaleString()}</p>
                     </div>
                   </div>
                 </div>
